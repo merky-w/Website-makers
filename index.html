@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumina Strategy | Elite Global Consultancy</title>
+
+<!-- Premium Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* --- CORE VARIABLES --- */
+:root {
+--bg-deep: #05050a;
+--bg-surface: rgba(20, 25, 40, 0.6);
+--glass-border: rgba(255, 255, 255, 0.08);
+--glass-shine: rgba(255, 255, 255, 0.15);
+
+--accent-glow: #38bdf8;
+--accent-secondary: #818cf8;
+--accent-teal: #2dd4bf;
+
+--text-primary: #f8fafc;
+--text-secondary: #94a3b8;
+
+--gradient-brand: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+
+--nav-height: 90px;
+--easing: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* --- RESET & BASE --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+font-family: 'Inter', sans-serif;
+background-color: var(--bg-deep);
+color: var(--text-primary);
+overflow-x: hidden;
+-webkit-font-smoothing: antialiased;
+line-height: 1.6;
+}
+
+h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+button { border: none; background: none; cursor: pointer; font-family: inherit; }
+ul { list-style: none; }
+
+/* --- BACKGROUND EFFECTS --- */
+#canvas-container {
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+z-index: -2;
+background: radial-gradient(circle at 50% -20%, #1e1b4b, var(--bg-deep) 60%);
+}
+
+/* Ambient Glow Blobs */
+.glow-blob {
+position: fixed;
+width: 600px; height: 600px;
+background: radial-gradient(circle, rgba(56, 189, 248, 0.15), transparent 70%);
+border-radius: 50%;
+pointer-events: none;
+z-index: -1;
+filter: blur(60px);
+animation: pulseBlob 10s infinite alternate;
+}
+.blob-1 { top: -100px; left: -100px; animation-delay: 0s; }
+.blob-2 { bottom: -100px; right: -100px; background: radial-gradient(circle, rgba(129, 140, 248, 0.15), transparent 70%); animation-delay: 5s; }
+
+@keyframes pulseBlob {
+0% { transform: scale(1); opacity: 0.5; }
+100% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* --- NAVIGATION --- */
+.navbar {
+position: fixed;
+top: 0; width: 100%; height: var(--nav-height);
+display: flex; justify-content: space-between; align-items: center;
+padding: 0 6%;
+background: rgba(5, 5, 10, 0.7);
+backdrop-filter: blur(20px);
+border-bottom: 1px solid var(--glass-border);
+z-index: 1000;
+transition: all 0.4s ease;
+}
+
+.logo {
+font-size: 1.8rem;
+font-weight: 800;
+background: var(--gradient-brand);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+letter-spacing: -1px;
+cursor: pointer;
+position: relative;
+}
+
+.logo::after {
+content: '';
+position: absolute;
+bottom: -4px; left: 0; width: 30%; height: 2px;
+background: var(--gradient-brand);
+border-radius: 2px;
+}
+
+.nav-links { display: flex; gap: 2.5rem; }
+
+.nav-link {
+font-size: 0.95rem;
+font-weight: 500;
+color: var(--text-secondary);
+position: relative;
+padding: 5px 0;
+}
+
+.nav-link:hover, .nav-link.active { color: var(--text-primary); }
+
+.nav-link::before {
+content: '';
+position: absolute;
+bottom: 0; left: 0; width: 0%; height: 2px;
+background: var(--accent-glow);
+transition: width 0.3s var(--easing);
+box-shadow: 0 0 10px var(--accent-glow);
+}
+.nav-link:hover::before, .nav-link.active::before { width: 100%; }
+
+/* --- CONTROLS & LANGUAGE --- */
+.controls { display: flex; align-items: center; gap: 1.5rem; }
+
+.lang-wrapper { position: relative; }
+
+.lang-btn {
+background: rgba(255,255,255,0.03);
+border: 1px solid var(--glass-border);
+padding: 0.6rem 1.2rem;
+border-radius: 30px;
+color: var(--text-primary);
+font-size: 0.85rem;
+font-weight: 600;
+display: flex; align-items: center; gap: 0.5rem;
+transition: all 0.3s;
+}
+
+.lang-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+
+.lang-menu {
+position: absolute;
+top: 120%; right: 0;
+background: rgba(15, 20, 30, 0.95);
+backdrop-filter: blur(15px);
+border: 1px solid var(--glass-border);
+border-radius: 12px;
+width: 160px;
+padding: 0.5rem;
+opacity: 0; transform: translateY(-10px) scale(0.95);
+pointer-events: none;
+transition: all 0.3s var(--easing);
+box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+overflow: hidden;
+}
+
+.lang-wrapper.open .lang-menu {
+opacity: 1; transform: translateY(0) scale(1);
+pointer-events: all;
+}
+
+.lang-opt {
+display: block; padding: 0.6rem 1rem;
+color: var(--text-secondary);
+border-radius: 6px; font-size: 0.9rem;
+transition: 0.2s;
+}
+.lang-opt:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* --- BUTTONS --- */
+.btn {
+padding: 0.8rem 2rem;
+border-radius: 8px;
+font-weight: 600;
+position: relative;
+overflow: hidden;
+transition: all 0.4s var(--easing);
+display: inline-flex; align-items: center; gap: 0.6rem;
+z-index: 1;
+}
+
+.btn-primary {
+background: var(--gradient-brand);
+color: white;
+border: 1px solid rgba(255,255,255,0.2);
+box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
+}
+
+.btn-primary::before {
+content: ''; position: absolute; top: 0; left: -100%;
+width: 100%; height: 100%;
+background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+transition: 0.5s; z-index: -1;
+}
+
+.btn-primary:hover {
+transform: translateY(-2px);
+box-shadow: 0 8px 30px rgba(129, 140, 248, 0.5);
+}
+.btn-primary:hover::before { left: 100%; }
+
+.btn-outline {
+background: transparent;
+border: 1px solid var(--glass-border);
+color: var(--text-primary);
+}
+.btn-outline:hover {
+border-color: var(--accent-glow);
+background: rgba(56, 189, 248, 0.05);
+text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+}
+
+/* --- LAYOUT & SECTIONS --- */
+main { padding-top: var(--nav-height); min-height: 100vh; }
+
+.page-section {
+display: none;
+opacity: 0;
+transform: translateY(30px);
+transition: opacity 0.6s var(--easing), transform 0.6s var(--easing);
+padding: 4rem 6%;
+}
+
+.page-section.active { display: block; opacity: 1; transform: translateY(0); }
+
+/* --- HERO --- */
+.hero-grid {
+display: grid;
+grid-template-columns: 1.2fr 0.8fr;
+align-items: center;
+gap: 4rem;
+min-height: 85vh;
+}
+
+.hero-badge {
+display: inline-block;
+padding: 6px 16px;
+background: rgba(56, 189, 248, 0.1);
+border: 1px solid rgba(56, 189, 248, 0.3);
+border-radius: 20px;
+color: var(--accent-glow);
+font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+margin-bottom: 1.5rem;
+box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
+}
+
+.hero-title {
+font-size: 4rem;
+line-height: 1.1;
+margin-bottom: 1.5rem;
+background: linear-gradient(to right, #fff, #94a3b8);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+font-size: 1.2rem;
+color: var(--text-secondary);
+margin-bottom: 2.5rem;
+max-width: 550px;
+}
+
+/* Glass Card Animation */
+.glass-card {
+background: var(--bg-surface);
+backdrop-filter: blur(20px);
+border: 1px solid var(--glass-border);
+border-top: 1px solid var(--glass-shine);
+padding: 2.5rem;
+border-radius: 24px;
+box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+position: relative;
+transform-style: preserve-3d;
+animation: float 8s ease-in-out infinite;
+}
+
+.stat-row { display: flex; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); }
+.stat-row:last-child { border: none; margin: 0; padding: 0; }
+
+.stat-val { font-size: 2.5rem; font-weight: 700; color: var(--text-primary); font-family: 'Outfit'; }
+.stat-lbl { font-size: 0.9rem; color: var(--text-secondary); }
+
+/* --- CONTENT GRIDS --- */
+.section-header { text-align: center; margin-bottom: 5rem; max-width: 700px; margin-left: auto; margin-right: auto; }
+.section-title { font-size: 2.5rem; margin-bottom: 1rem; }
+.section-sub { color: var(--text-secondary); font-size: 1.1rem; }
+
+.grid-3 {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+gap: 2rem;
+}
+
+.card {
+background: var(--bg-surface);
+border: 1px solid var(--glass-border);
+border-radius: 20px;
+padding: 2.5rem;
+transition: all 0.4s var(--easing);
+position: relative;
+overflow: hidden;
+}
+
+.card:hover {
+transform: translateY(-8px);
+border-color: rgba(56, 189, 248, 0.4);
+box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.card-icon {
+width: 60px; height: 60px;
+border-radius: 12px;
+background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+display: flex; align-items: center; justify-content: center;
+font-size: 1.5rem; color: var(--accent-glow);
+margin-bottom: 1.5rem;
+border: 1px solid var(--glass-border);
+}
+
+/* --- PRICING --- */
+.pricing-card {
+background: var(--bg-surface);
+border: 1px solid var(--glass-border);
+border-radius: 24px;
+padding: 3rem 2rem;
+text-align: center;
+position: relative;
+transition: 0.4s;
+}
+
+.pricing-card.featured {
+border-color: var(--accent-secondary);
+background: linear-gradient(180deg, rgba(129, 140, 248, 0.05) 0%, rgba(20, 25, 40, 0.9) 100%);
+box-shadow: 0 0 30px rgba(129, 140, 248, 0.1);
+}
+
+.price-tag { font-size: 3rem; font-weight: 800; color: #fff; margin: 1.5rem 0; font-family: 'Outfit'; }
+.price-sub { font-size: 1rem; color: var(--text-secondary); font-weight: 400; }
+
+.feature-list li {
+margin: 1rem 0; color: var(--text-secondary); text-align: left;
+display: flex; align-items: center; gap: 10px;
+}
+.feature-list i { color: var(--accent-teal); }
+
+/* --- PROFILE --- */
+.profile-box {
+display: flex; gap: 4rem; align-items: center;
+background: var(--bg-surface); border: 1px solid var(--glass-border);
+border-radius: 24px; padding: 3rem;
+}
+.profile-pic {
+width: 250px; height: 250px; border-radius: 50%;
+object-fit: cover; border: 4px solid rgba(56, 189, 248, 0.2);
+box-shadow: 0 0 30px rgba(56, 189, 248, 0.1);
+}
+
+/* --- TOAST --- */
+.toast {
+position: fixed; bottom: 30px; right: 30px;
+background: rgba(15, 23, 42, 0.95);
+backdrop-filter: blur(10px);
+border: 1px solid var(--glass-border);
+border-left: 4px solid var(--accent-teal);
+color: #fff; padding: 1rem 1.5rem;
+border-radius: 8px;
+display: flex; align-items: center; gap: 1rem;
+transform: translateX(150%); transition: 0.5s var(--easing);
+box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+z-index: 2000;
+}
+.toast.active { transform: translateX(0); }
+
+/* --- ANIMATION UTILS --- */
+@keyframes float {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-15px); }
+}
+
+.fade-up { opacity: 0; transform: translateY(20px); transition: 0.8s var(--easing); }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+
+/* Mobile */
+@media (max-width: 768px) {
+.navbar { padding: 0 1.5rem; }
+.nav-links { display: none; }
+.hero-grid { grid-template-columns: 1fr; text-align: center; gap: 3rem; }
+.hero-desc { margin: 0 auto 2rem; }
+.cta-group { justify-content: center; }
+.profile-box { flex-direction: column; text-align: center; }
+.feature-list li { justify-content: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- Ambient Glows -->
+<div class="glow-blob blob-1"></div>
+<div class="glow-blob blob-2"></div>
+
+<!-- Smart Interactive Canvas -->
+<div id="canvas-container">
+<canvas id="bgCanvas"></canvas>
+</div>
+
+<!-- Navigation -->
+<nav class="navbar">
+<div class="logo" onclick="router('home')">LUMINA.</div>
+
+<ul class="nav-links">
+<li><a class="nav-link active" onclick="router('home')" data-i18n="nav_home">Home</a></li>
+<li><a class="nav-link" onclick="router('about-us')" data-i18n="nav_about_us">About Us</a></li>
+<li><a class="nav-link" onclick="router('about-me')" data-i18n="nav_about_me">About Me</a></li>
+<li><a class="nav-link" onclick="router('pricing')" data-i18n="nav_pricing">Pricing</a></li>
+</ul>
+
+<div class="controls">
+<!-- Smart Language Dropdown -->
+<div class="lang-wrapper" id="langWrapper">
+<button class="lang-btn" onclick="toggleLangMenu()">
+<i class="fa-solid fa-globe"></i>
+<span id="currLang">EN</span>
+<i class="fa-solid fa-chevron-down" style="font-size: 0.7em;"></i>
+</button>
+<div class="lang-menu">
+<a href="#" class="lang-opt" onclick="setLanguage('en')">English</a>
+<a href="#" class="lang-opt" onclick="setLanguage('es')">Español</a>
+<a href="#" class="lang-opt" onclick="setLanguage('fr')">Français</a>
+<a href="#" class="lang-opt" onclick="setLanguage('it')">Italiano</a>
+<a href="#" class="lang-opt" onclick="setLanguage('pl')">Polski</a>
+<a href="#" class="lang-opt" onclick="setLanguage('da')">Dansk</a>
+<a href="#" class="lang-opt" onclick="setLanguage('sr')">Srpski</a>
+<a href="#" class="lang-opt" onclick="setLanguage('hu')">Magyar</a>
+</div>
+</div>
+<button class="btn btn-primary" onclick="showToast(t('toast_booking'))" data-i18n="btn_book">
+Book Call
+</button>
+</div>
+</nav>
+
+<main>
+<!-- HOME -->
+<section id="home" class="page-section active">
+<div class="hero-grid">
+<div class="hero-content">
+<span class="hero-badge fade-up visible" data-i18n="hero_tag">Elite Consultancy</span>
+<h1 class="hero-title fade-up delay-1 visible" data-i18n="hero_title">Scale Your Brand With Precision.</h1>
+<p class="hero-desc fade-up delay-2 visible" data-i18n="hero_sub">We don't just decorate. We build outcome-driven digital systems that convert visitors into loyal clients.</p>
+<div class="cta-group fade-up delay-3 visible">
+<button class="btn btn-primary" onclick="router('pricing')" data-i18n="btn_view_pricing">
+View Pricing <i class="fa-solid fa-arrow-right"></i>
+</button>
+<button class="btn btn-outline" onclick="router('about-us')" data-i18n="btn_learn_more">Learn More</button>
+</div>
+</div>
+<div class="hero-visual fade-up delay-2 visible">
+<div class="glass-card">
+<div class="stat-row">
+<div>
+<div class="stat-val">300%</div>
+<div class="stat-lbl" data-i18n="stat_roi">Avg. ROI</div>
+</div>
+<div>
+<div class="stat-val">50+</div>
+<div class="stat-lbl" data-i18n="stat_clients">Global Brands</div>
+</div>
+</div>
+<div class="stat-row">
+<div>
+<div class="stat-val">$10M</div>
+<div class="stat-lbl" data-i18n="stat_revenue">Revenue Generated</div>
+</div>
+<div>
+<div class="stat-val">24/7</div>
+<div class="stat-lbl" data-i18n="stat_support">Support</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="section-header fade-up" style="margin-top: 6rem;">
+<span class="hero-badge" data-i18n="process_tag">The Process</span>
+<h2 class="section-title" data-i18n="process_title">Why Generic Websites Fail</h2>
+<p class="section-sub" data-i18n="process_sub">Most sites are aesthetic decorations. We build conversion engines.</p>
+</div>
+
+<div class="grid-3">
+<div class="card fade-up delay-1">
+<div class="card-icon"><i class="fa-solid fa-bullseye"></i></div>
+<h4 data-i18n="card_1_title">Clear Targeting</h4>
+<p style="color:var(--text-secondary); margin-top:0.5rem; font-size:0.9rem;" data-i18n="card_1_desc">Define exactly who your audience is.</p>
+</div>
+<div class="card fade-up delay-2">
+<div class="card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+<h4 data-i18n="card_2_title">Intentional Motion</h4>
+<p style="color:var(--text-secondary); margin-top:0.5rem; font-size:0.9rem;" data-i18n="card_2_desc">Animations guide attention to key actions.</p>
+</div>
+<div class="card fade-up delay-3">
+<div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
+<h4 data-i18n="card_3_title">Conversion First</h4>
+<p style="color:var(--text-secondary); margin-top:0.5rem; font-size:0.9rem;" data-i18n="card_3_desc">Designed to move visitors toward a goal.</p>
+</div>
+</div>
+</section>
+
+<!-- ABOUT US -->
+<section id="about-us" class="page-section">
+<div class="section-header fade-up">
+<span class="hero-badge" data-i18n="about_us_tag">Our Agency</span>
+<h2 class="section-title" data-i18n="about_us_title">Collective Excellence</h2>
+<p class="section-sub" data-i18n="about_us_sub">We are a team of strategists, designers, and engineers obsessed with performance.</p>
+</div>
+<div class="grid-3">
+<div class="card fade-up delay-1" style="text-align:center;">
+<img src="https://picsum.photos/seed/team1/200/200" style="width:100px; height:100px; border-radius:50%; margin-bottom:1rem; object-fit:cover;">
+<h4>Sarah Jenkins</h4>
+<p style="color:var(--accent-glow); font-size:0.85rem;" data-i18n="role_strategy">Head of Strategy</p>
+</div>
+<div class="card fade-up delay-2" style="text-align:center;">
+<img src="https://picsum.photos/seed/team2/200/200" style="width:100px; height:100px; border-radius:50%; margin-bottom:1rem; object-fit:cover;">
+<h4>David Chen</h4>
+<p style="color:var(--accent-glow); font-size:0.85rem;" data-i18n="role_creative">Creative Director</p>
+</div>
+<div class="card fade-up delay-3" style="text-align:center;">
+<img src="https://picsum.photos/seed/team3/200/200" style="width:100px; height:100px; border-radius:50%; margin-bottom:1rem; object-fit:cover;">
+<h4>Elena Rodriguez</h4>
+<p style="color:var(--accent-glow); font-size:0.85rem;" data-i18n="role_dev">Lead Developer</p>
+</div>
+</div>
+</section>
+
+<!-- ABOUT ME -->
+<section id="about-me" class="page-section">
+<div class="profile-box fade-up">
+<img src="https://picsum.photos/seed/founder/500/500" alt="Founder" class="profile-pic">
+<div>
+<span class="hero-badge" data-i18n="founder_tag">The Visionary</span>
+<h2 style="font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="founder_name">Alex Mercer</h2>
+<p style="color: var(--text-secondary); margin-bottom: 1.5rem;" data-i18n="founder_desc">
+With over 15 years in digital product design, I've seen the industry shift from flashiness to functionality. I founded Lumina on the principle that <strong>design is not art, it is a tool for business growth.</strong>
+</p>
+<ul style="margin-bottom: 2rem; color: var(--text-primary);">
+<li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-check" style="color: var(--accent-teal); margin-right: 10px;"></i> <span data-i18n="founder_pt1">Former Design Lead at TechCorp</span></li>
+<li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-check" style="color: var(--accent-teal); margin-right: 10px;"></i> <span data-i18n="founder_pt2">Speaker at WebSummit 2023</span></li>
+<li><i class="fa-solid fa-check" style="color: var(--accent-teal); margin-right: 10px;"></i> <span data-i18n="founder_pt3">Author of "Outcome-Driven UI"</span></li>
+</ul>
+<button class="btn btn-outline" onclick="showToast(t('toast_linkedin'))">
+<i class="fa-brands fa-linkedin"></i> LinkedIn
+</button>
+</div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="page-section">
+<div class="section-header fade-up">
+<span class="hero-badge" data-i18n="pricing_tag">Investment</span>
+<h2 class="section-title" data-i18n="pricing_title">Select Your Tier</h2>
+<p class="section-sub" data-i18n="pricing_sub">Transparent pricing for scalable results.</p>
+</div>
+
+<div class="grid-3">
+<div class="pricing-card fade-up delay-1">
+<h4 data-i18n="plan_basic">Starter</h4>
+<div class="price-tag">$2,500<span class="price-sub">/mo</span></div>
+<p style="color:var(--text-secondary); margin-bottom:2rem;" data-i18n="plan_basic_desc">For early-stage brands.</p>
+<ul class="feature-list">
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_1">Brand Audit</span></li>
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_2">Landing Page Design</span></li>
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_3">Monthly Report</span></li>
+</ul>
+<button class="btn btn-outline" onclick="showToast(t('toast_select_starter'))" data-i18n="btn_select">Select</button>
+</div>
+
+<div class="pricing-card featured fade-up delay-2">
+<div style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--accent-secondary); color:#000; padding:5px 15px; border-radius:20px; font-weight:700; font-size:0.8rem;" data-i18n="best_value">Best Value</div>
+<h4 data-i18n="plan_growth">Growth</h4>
+<div class="price-tag">$5,000<span class="price-sub">/mo</span></div>
+<p style="color:var(--text-secondary); margin-bottom:2rem;" data-i18n="plan_growth_desc">Full strategy for scaling.</p>
+<ul class="feature-list">
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_4">Complete Web System</span></li>
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_5">SEO & Copywriting</span></li>
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_6">Weekly Calls</span></li>
+</ul>
+<button class="btn btn-primary" onclick="showToast(t('toast_select_growth'))" data-i18n="btn_select">Select</button>
+</div>
+
+<div class="pricing-card fade-up delay-3">
+<h4 data-i18n="plan_enterprise">Enterprise</h4>
+<div class="price-tag" data-i18n="plan_price_custom">Custom</div>
+<p style="color:var(--text-secondary); margin-bottom:2rem;" data-i18n="plan_ent_desc">For market leaders.</p>
+<ul class="feature-list">
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_7">Dedicated Team</span></li>
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_8">Custom App Dev</span></li>
+<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_9">24/7 Priority</span></li>
+</ul>
+<button class="btn btn-outline" onclick="showToast(t('toast_contact_sales'))" data-i18n="btn_contact">Contact</button>
+</div>
+</div>
+</section>
+</main>
+
+<div id="toast" class="toast">
+<i class="fa-solid fa-circle-check" style="color: var(--accent-teal);"></i>
+<span id="toastMsg">Notification</span>
+</div>
+
+<script>
+/* --- TRANSLATIONS (All 8 Languages) --- */
+const translations = {
+en: {
+nav_home:"Home", nav_about_us:"About Us", nav_about_me:"About Me", nav_pricing:"Pricing", btn_book:"Book Call",
+hero_tag:"Elite Consultancy", hero_title:"Scale Your Brand With Precision.", hero_sub:"We don't just decorate. We build outcome-driven digital systems that convert visitors into loyal clients.",
+btn_view_pricing:"View Pricing", btn_learn_more:"Learn More", stat_roi:"Avg. ROI", stat_clients:"Global Brands", stat_revenue:"Revenue Generated", stat_support:"Support",
+process_tag:"The Process", process_title:"Why Generic Websites Fail", process_sub:"Most sites are aesthetic decorations. We build conversion engines.",
+card_1_title:"Clear Targeting", card_1_desc:"Define exactly who your audience is.", card_2_title:"Intentional Motion", card_2_desc:"Animations guide attention to key actions.", card_3_title:"Conversion First", card_3_desc:"Designed to move visitors toward a goal.",
+about_us_tag:"Our Agency", about_us_title:"Collective Excellence", about_us_sub:"We are a team of strategists, designers, and engineers obsessed with performance.",
+role_strategy:"Head of Strategy", role_creative:"Creative Director", role_dev:"Lead Developer",
+founder_tag:"The Visionary", founder_name:"Alex Mercer", founder_desc:"With over 15 years in digital product design, I've seen the industry shift from flashiness to functionality. I founded Lumina on the principle that design is not art, it is a tool for business growth.",
+founder_pt1:"Former Design Lead at TechCorp", founder_pt2:"Speaker at WebSummit 2023", founder_pt3:"Author of 'Outcome-Driven UI'",
+pricing_tag:"Investment", pricing_title:"Select Your Tier", pricing_sub:"Transparent pricing for scalable results.",
+plan_basic:"Starter", plan_basic_desc:"For early-stage brands.", plan_growth:"Growth", plan_growth_desc:"Full strategy for scaling.", plan_enterprise:"Enterprise", plan_ent_desc:"For market leaders.", plan_price_custom:"Custom",
+best_value:"Best Value", btn_select:"Select", btn_contact:"Contact",
+feat_1:"Brand Audit", feat_2:"Landing Page Design", feat_3:"Monthly Report", feat_4:"Complete Web System", feat_5:"SEO & Copywriting", feat_6:"Weekly Calls", feat_7:"Dedicated Team", feat_8:"Custom App Dev", feat_9:"24/7 Priority",
+toast_booking:"Opening Calendar...", toast_linkedin:"Connecting to LinkedIn...", toast_select_starter:"Starter Plan Selected", toast_select_growth:"Growth Plan Selected", toast_contact_sales:"Contacting Sales..."
+},
+es: {
+nav_home:"Inicio", nav_about_us:"Sobre Nosotros", nav_about_me:"Sobre Mí", nav_pricing:"Precios", btn_book:"Reservar Llamada",
+hero_tag:"Consultoría de Élite", hero_title:"Escala Tu Marca Con Precisión.", hero_sub:"No solo decoramos. Construimos sistemas digitales orientados a resultados que convierten visitantes en clientes leales.",
+btn_view_pricing:"Ver Precios", btn_learn_more:"Saber Más", stat_roi:"ROI Promedio", stat_clients:"Marcas Globales", stat_revenue:"Ingresos", stat_support:"Soporte",
+process_tag:"El Proceso", process_title:"Por Qué Los Sitios Fallan", process_sub:"Construimos motores de conversión.",
+card_1_title:"Segmentación Clara", card_1_desc:"Define exactamente a tu audiencia.", card_2_title:"Movimiento Intencional", card_2_desc:"Las animaciones guían la atención.", card_3_title:"Conversión Primero", card_3_desc:"Diseñado para mover al visitante.",
+about_us_tag:"Nuestra Agencia", about_us_title:"Excelencia Colectiva", about_us_sub:"Somos un equipo de estrategas, diseñadores e ingenieros.",
+role_strategy:"Jefe de Estrategia", role_creative:"Director Creativo", role_dev:"Líder de Desarrollo",
+founder_tag:"El Visionario", founder_name:"Alex Mercer", founder_desc:"Con más de 15 años en diseño de productos digitales, vi pasar la industria del brillo a la funcionalidad. Fundé Lumina con el principio de que el diseño no es arte, es una herramienta para el crecimiento.",
+founder_pt1:"Ex Jefe de Diseño en TechCorp", founder_pt2:"Ponente en WebSummit 2023", founder_pt3:"Autor de 'UI Orientado a Resultados'",
+pricing_tag:"Inversión", pricing_title:"Elige Tu Nivel", pricing_sub:"Precios transparentes.",
+plan_basic:"Inicial", plan_basic_desc:"Para marcas iniciales.", plan_growth:"Crecimiento", plan_growth_desc:"Estrategia completa para escalar.", plan_enterprise:"Empresarial", plan_ent_desc:"Para líderes de mercado.", plan_price_custom:"A Medida",
+best_value:"Mejor Valor", btn_select:"Seleccionar", btn_contact:"Contactar",
+feat_1:"Auditoría", feat_2:"Diseño Landing", feat_3:"Informe Mensual", feat_4:"Sistema Web", feat_5:"SEO y Redacción", feat_6:"Llamadas Semanales", feat_7:"Equipo Dedicado", feat_8:"App a Medida", feat_9:"Soporte 24/7",
+toast_booking:"Abriendo Calendario...", toast_linkedin:"Conectando LinkedIn...", toast_select_starter:"Plan Inicial Seleccionado", toast_select_growth:"Plan Crecimiento Seleccionado", toast_contact_sales:"Contactando Ventas..."
+},
+fr: {
+nav_home:"Accueil", nav_about_us:"À Propos", nav_about_me:"À Propos de Moi", nav_pricing:"Tarifs", btn_book:"Réserver",
+hero_tag:"Consultation d'Élite", hero_title:"Faites Grandir Votre Marque.", hero_sub:"Nous construisons des systèmes numériques orientés résultats.",
+btn_view_pricing:"Voir Tarifs", btn_learn_more:"En Savoir Plus", stat_roi:"ROI Moyen", stat_clients:"Marques Monde", stat_revenue:"Revenus", stat_support:"Support",
+process_tag:"Le Processus", process_title:"Pourquoi Les Sites Échouent", process_sub:"Nous construisons des moteurs de conversion.",
+card_1_title:"Ciblage Clair", card_1_desc:"Définissez votre audience.", card_2_title:"Mouvement Intentionnel", card_2_desc:"Les animations guident l'attention.", card_3_title:"Conversion D'Abord", card_3_desc:"Conçu pour convertir.",
+about_us_tag:"Notre Agence", about_us_title:"Excellence Collective", about_us_sub:"Stratèges, designers et ingénieurs.",
+role_strategy:"Dir. Stratégie", role_creative:"Dir. Artistique", role_dev:"Lead Dev",
+founder_tag:"Le Visionnaire", founder_name:"Alex Mercer", founder_desc:"Avec plus de 15 ans d'expérience, j'ai fondé Lumina sur le principe que le design est un outil de croissance.",
+founder_pt1:"Ex Chef Design TechCorp", founder_pt2:"Conférencier WebSummit", founder_pt3:"Auteur 'UI Résultat'",
+pricing_tag:"Investissement", pricing_title:"Choisissez Votre Niveau", pricing_sub:"Tarifs transparents.",
+plan_basic:"Débutant", plan_basic_desc:"Pour les starts-ups.", plan_growth:"Croissance", plan_growth_desc:"Stratégie complète.", plan_enterprise:"Entreprise", plan_ent_desc:"Pour les leaders.", plan_price_custom:"Sur Mesure",
+best_value:"Meilleure Valeur", btn_select:"Sélectionner", btn_contact:"Contacter",
+feat_1:"Audit", feat_2:"Design Landing", feat_3:"Rapport Mensuel", feat_4:"Système Web", feat_5:"SEO", feat_6:"Appels Hebdo", feat_7:"Équipe Déd.", feat_8:"Dev App", feat_9:"Support 24/7",
+toast_booking:"Ouverture Calendrier...", toast_linkedin:"Connexion LinkedIn...", toast_select_starter:"Plan Débutant Sélectionné", toast_select_growth:"Plan Croissance Sélectionné", toast_contact_sales:"Contact Ventes..."
+},
+it: {
+nav_home:"Home", nav_about_us:"Chi Siamo", nav_about_me:"Chi Sono", nav_pricing:"Prezzi", btn_book:"Prenota",
+hero_tag:"Consulenza d'Élite", hero_title:"Cresci Con Precisione.", hero_sub:"Costruiamo sistemi digitali per convertire visitatori.",
+btn_view_pricing:"Vedi Prezzi", btn_learn_more:"Scopri di Più", stat_roi:"ROI Medio", stat_clients:"Marchi Globali", stat_revenue:"Ricavi", stat_support:"Supporto",
+process_tag:"Il Processo", process_title:"Perché I Siti Falliscono", process_sub:"Costruiamo motori di conversione.",
+card_1_title:"Targeting Chiaro", card_1_desc:"Definisci la tua audience.", card_2_title:"Movimento Intenzionale", card_2_desc:"Le animazioni guidano l'attenzione.", card_3_title:"Conversione Prima", card_3_desc:"Progettato per convertire.",
+about_us_tag:"La Nostra Agenzia", about_us_title:"Eccellenza Collettiva", about_us_sub:"Strateghi e designer.",
+role_strategy:"Resp. Strategia", role_creative:"Dir. Creativo", role_dev:"Lead Sviluppatore",
+founder_tag:"Il Visionario", founder_name:"Alex Mercer", founder_desc:"Con 15+ anni di esperienza, ho fondato Lumina sul principio che il design è uno strumento di crescita.",
+founder_pt1:"Ex Design Lead TechCorp", founder_pt2:"Speaker WebSummit 2023", founder_pt3:"Autore 'UI Risultato'",
+pricing_tag:"Investimento", pricing_title:"Scegli Il Tuo Livello", pricing_sub:"Prezzi trasparenti.",
+plan_basic:"Starter", plan_basic_desc:"Per le startup.", plan_growth:"Crescita", plan_growth_desc:"Strategia completa.", plan_enterprise:"Enterprise", plan_ent_desc:"Per i leader.", plan_price_custom:"Personalizzato",
+best_value:"Migliore Valore", btn_select:"Seleziona", btn_contact:"Contatta",
+feat_1:"Audit", feat_2:"Design Landing", feat_3:"Report Mensile", feat_4:"Sistema Web", feat_5:"SEO & Copy", feat_6:"Chiamate Sett.", feat_7:"Team Dedicato", feat_8:"Dev App", feat_9:"Supporto 24/7",
+toast_booking:"Apertura Calendario...", toast_linkedin:"Connessione LinkedIn...", toast_select_starter:"Piano Starter Selezionato", toast_select_growth:"Piano Crescita Selezionato", toast_contact_sales:"Contatto Vendite..."
+},
+pl: {
+nav_home:"Strona Główna", nav_about_us:"O Nas", nav_about_me:"O Mnie", nav_pricing:"Cennik", btn_book:"Umów Rozmowę",
+hero_tag:"Konsulting Premium", hero_title:"Skaluj Z Precyzją.", hero_sub:"Budujemy systemy cyfrowe, które konwertują.",
+btn_view_pricing:"Zobacz Cennik", btn_learn_more:"Więcej", stat_roi:"Średni ROI", stat_clients:"Marki Globalne", stat_revenue:"Przychód", stat_support:"Wsparcie",
+process_tag:"Proces", process_title:"Dlaczego Strony Porażają", process_sub:"Budujemy silniki konwersji.",
+card_1_title:"Jasne Targetowanie", card_1_desc:"Zdefiniuj odbiorców.", card_2_title:"Intencjonalny Ruch", card_2_desc:"Animacje kierują uwagę.", card_3_title:"Konwersja Pierwsza", card_3_desc:"Zaprojektowane dla wyników.",
+about_us_tag:"Nasza Agencja", about_us_title:"Kolektywna Doskonałość", about_us_sub:"Strategowie i inżynierowie.",
+role_strategy:"Szef Strategii", role_creative:"Dir. Kreatywny", role_dev:"Główny Dev",
+founder_tag:"Wizjoner", founder_name:"Alex Mercer", founder_desc:"Z ponad 15-letnim doświadczeniem, założyłem Lumina na zasadzie, że design narzędziem wzrostu.",
+founder_pt1:"Były Design Lead TechCorp", founder_pt2:"Speaker WebSummit", founder_pt3:"Autor 'UI Wyniki'",
+pricing_tag:"Inwestycja", pricing_title:"Wybierz Poziom", pricing_sub:"Przejrzyste ceny.",
+plan_basic:"Starter", plan_basic_desc:"Dla początkujących.", plan_growth:"Wzrost", plan_growth_desc:"Pełna strategia.", plan_enterprise:"Enterprise", plan_ent_desc:"Dla liderów.", plan_price_custom:"Niestandardowy",
+best_value:"Najlepsza Wartość", btn_select:"Wybierz", btn_contact:"Kontakt",
+feat_1:"Audyt", feat_2:"Design Landing", feat_3:"Raport Mies.", feat_4:"System Web", feat_5:"SEO & Copy", feat_6:"Rozm. Tyg.", feat_7:"Zespół Dedic.", feat_8:"Aplikacje", feat_9:"Wsparcie 24/7",
+toast_booking:"Otwieranie Kalendarza...", toast_linkedin:"Łączenie LinkedIn...", toast_select_starter:"Wybrano Starter", toast_select_growth:"Wybrano Wzrost", toast_contact_sales:"Kontakt Sprzedaż..."
+},
+da: {
+nav_home:"Hjem", nav_about_us:"Om Os", nav_about_me:"Om Mig", nav_pricing:"Priser", btn_book:"Book Opkald",
+hero_tag:"Premium Konsulent", hero_title:"Skalér Med Præcision.", hero_sub:"Vi bygger digitale systemer til konvertering.",
+btn_view_pricing:"Se Priser", btn_learn_more:"Mere", stat_roi:"Gns. ROI", stat_clients:"Globale Mærker", stat_revenue:"Omsætning", stat_support:"Support",
+process_tag:"Processen", process_title:"Hvorfor Hjemmesider Fejler", process_sub:"Vi bygger konverteringsmotorer.",
+card_1_title:"Klar Målretning", card_1_desc:"Definer dit publikum.", card_2_title:"Hensigtsmæssig Bevægelse", card_2_desc:"Animationer guider opmærksomheden.", card_3_title:"Konversion Først", card_3_desc:"Designet til resultater.",
+about_us_tag:"Vores Bureau", about_us_title:"Kollektiv Ekspertise", about_us_sub:"Strateger og ingeniører.",
+role_strategy:"Head of Strategy", role_creative:"Creative Director", role_dev:"Lead Developer",
+founder_tag:"Visionæren", founder_name:"Alex Mercer", founder_desc:"Med 15+ års erfaring grundlagde jeg Lumina på princippet om at design er et vækstværktøj.",
+founder_pt1:"Tidligere Design Lead TechCorp", founder_pt2:"Speaker WebSummit", founder_pt3:"Forfatter 'UI Resultater'",
+pricing_tag:"Investering", pricing_title:"Vælg Niveau", pricing_sub:"Gennemsigtige priser.",
+plan_basic:"Starter", plan_basic_desc:"For nye brands.", plan_growth:"Vækst", plan_growth_desc:"Fuld strategi.", plan_enterprise:"Enterprise", plan_ent_desc:"For ledere.", plan_price_custom:"Tilpasset",
+best_value:"Bedste Værdi", btn_select:"Vælg", btn_contact:"Kontakt",
+feat_1:"Brand Revision", feat_2:"Landing Design", feat_3:"Månedlig Rapport", feat_4:"Web System", feat_5:"SEO", feat_6:"Ugentlige Opkald", feat_7:"Dedikeret Team", feat_8:"App Dev", feat_9:"Prioritet 24/7",
+toast_booking:"Åbner Kalender...", toast_linkedin:"Forbinder LinkedIn...", toast_select_starter:"Starter Valgt", toast_select_growth:"Vækst Valgt", toast_contact_sales:"Kontakt Salg..."
+},
+sr: {
+nav_home:"Početna", nav_about_us:"O Nama", nav_about_me:"O Meni", nav_pricing:"Cenovnik", btn_book:"Zakaži Poziv",
+hero_tag:"Premium Konsalting", hero_title:"Skalirajte Sa Preciznošću.", hero_sub:"Gradimo sisteme za konverziju.",
+btn_view_pricing:"Pogledaj Cene", btn_learn_more:"Više", stat_roi:"Prosečan ROI", stat_clients:"Globalni Brendovi", stat_revenue:"Prihod", stat_support:"Podrška",
+process_tag:"Proces", process_title:"Zašto Sajtovi Propadaju", process_sub:"Gradimo motore konverzije.",
+card_1_title:"Jasno Ciljanje", card_1_desc:"Definišite publiku.", card_2_title:"Namenski Pokret", card_2_desc:"Animacije vode pažnju.", card_3_title:"Konverzija Prvo", card_3_desc:"Dizajnirano za rezultate.",
+about_us_tag:"Naša Agencija", about_us_title:"Kolektivna Izvrsnost", about_us_sub:"Strategije i inženjering.",
+role_strategy:"Dir. Strategije", role_creative:"Dir. Kreativni", role_dev:"Glavni Programer",
+founder_tag:"Vizionar", founder_name:"Aleksandar Merkerv", founder_desc:"Sa 15+ godina iskustva, osnovao sam Lumina na principu da je dizajn alat rasta.",
+founder_pt1:"Bivši Design Lead TechCorp", founder_pt2:"Speaker WebSummit", founder_pt3:"Autor 'UI Rezultati'",
+pricing_tag:"Ulaganje", pricing_title:"Izaberite Nivo", pricing_sub:"Transparentne cene.",
+plan_basic:"Početni", plan_basic_desc:"Za nove brendove.", plan_growth:"Rast", plan_growth_desc:"Puna strategija.", plan_enterprise:"Preduzeće", plan_ent_desc:"Za lidere.", plan_price_custom:"Po Meri",
+best_value:"Najbolja Vrednost", btn_select:"Odaberi", btn_contact:"Kontakt",
+feat_1:"Revizija", feat_2:"Landing Dizajn", feat_3:"Mesečni Izveštaj", feat_4:"Web Sistem", feat_5:"SEO", feat_6:"Nedeljni Pozivi", feat_7:"Dedikovan Tim", feat_8:"App Dev", feat_9:"Prioritet 24/7",
+toast_booking:"Otvaranje Kalendara...", toast_linkedin:"Povezivanje LinkedIn...", toast_select_starter:"Početni Izabran", toast_select_growth:"Rast Izabran", toast_contact_sales:"Kontakt Prodaja..."
+},
+hu: {
+nav_home:"Főoldal", nav_about_us:"Rólunk", nav_about_me:"Rólam", nav_pricing:"Árak", btn_book:"Hívás Foglalása",
+hero_tag:"Premium Tanácsadás", hero_title:"Skálázz Pontossággal.", hero_sub:"Digitális rendszerek építése konverzióra.",
+btn_view_pricing:"Árak Megtekintése", btn_learn_more:"Tudj Meg Többet", stat_roi:"Átlagos ROI", stat_clients:"Globális Márkák", stat_revenue:"Bevétel", stat_support:"Támogatás",
+process_tag:"Folyamat", process_title:"Miért Nem Működnek A Weboldalak", process_sub:"Konverziós motorok építése.",
+card_1_title:"Egyértelmű Célzás", card_1_desc:"Határozza meg közönségét.", card_2_title:"Szándékos Mozgás", card_2_desc:"A figyelem irányítása.", card_3_title:"Konverzió Első", card_3_desc:"Eredményekre tervezve.",
+about_us_tag:"Ügynökségünk", about_us_title:"Kollektív Kiválóság", about_us_sub:"Stratégák és mérnökök.",
+role_strategy:"Stratégiai Vezető", role_creative:"Kreatív Igazgató", role_dev:"Vezető Fejlesztő",
+founder_tag:"Vízió", founder_name:"Alex Mercer", founder_desc:"15+ év tapasztalattal a Lumina alapítója: a design a növekedés eszköze.",
+founder_pt1:"Korábbi Design Lead TechCorp", founder_pt2:"Beszélő WebSummit", founder_pt3:"Szerző 'UI Eredmények'",
+pricing_tag:"Befektetés", pricing_title:"Válasszon Szintet", pricing_sub:"Átlátható árak.",
+plan_basic:"Kezdő", plan_basic_desc:"Új márkáknak.", plan_growth:"Növekedés", plan_growth_desc:"Teljes stratégia.", plan_enterprise:"Vállalati", plan_ent_desc:"Vezetőknek.", plan_price_custom:"Egyedi",
+best_value:"Legjobb Érték", btn_select:"Kiválaszt", btn_contact:"Kapcsolat",
+feat_1:"Audit", feat_2:"Landing Tervezés", feat_3:"Havi Jelentés", feat_4:"Web Rendszer", feat_5:"SEO", feat_6:"Heti Hívások", feat_7:"Dedikált Csapat", feat_8:"App Fejlesztés", feat_9:"24/7 Prioritás",
+toast_booking:"Naptár Megnyitása...", toast_linkedin:"Kapcsolódás LinkedIn...", toast_select_starter:"Kezdő Terv Kiválasztva", toast_select_growth:"Növekedési Terv Kiválasztva", toast_contact_sales:"Kapcsolat Értékesítés..."
+}
+};
+
+/* --- LOGIC --- */
+let lang = 'en';
+
+function t(key) { return translations[lang][key] || translations['en'][key] || ''; }
+
+function toggleLangMenu() {
+document.getElementById('langWrapper').classList.toggle('open');
+}
+
+function setLanguage(l) {
+lang = l;
+document.getElementById('currLang').innerText = l.toUpperCase();
+updateContent();
+document.getElementById('langWrapper').classList.remove('open');
+}
+
+function updateContent() {
+document.querySelectorAll('[data-i18n]').forEach(el => {
+const key = el.getAttribute('data-i18n');
+const txt = t(key);
+if (txt) {
+if (el.querySelector('i') && el.tagName !== 'P' && el.tagName !== 'SPAN') {
+const icon = el.querySelector('i').outerHTML;
+el.innerHTML = icon + " " + txt;
+} else {
+el.innerText = txt;
+}
+}
+});
+}
+
+/* --- ROUTER (SPA) --- */
+function router(pageId) {
+document.querySelectorAll('.page-section').forEach(el => {
+el.classList.remove('active');
+});
+document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+
+const target = document.getElementById(pageId);
+if (target) {
+target.classList.add('active');
+window.scrollTo({ top: 0, behavior: 'smooth' });
+
+const nav = document.querySelector(`.nav-link[onclick="router('${pageId}')"]`);
+if(nav) nav.classList.add('active');
+
+observeReveals();
+}
+}
+
+/* --- TOAST --- */
+function showToast(msg) {
+const t = document.getElementById('toast');
+document.getElementById('toastMsg').innerText = msg;
+t.classList.add('active');
+setTimeout(() => t.classList.remove('active'), 3000);
+}
+
+/* --- REVEAL ANIMATION --- */
+function observeReveals() {
+const obs = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) entry.target.classList.add('visible');
+});
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+}
+
+/* --- SMART CANVAS --- */
+function initCanvas() {
+const cvs = document.getElementById('bgCanvas');
+const ctx = cvs.getContext('2d');
+let w, h, particles = [];
+let mouse = { x: null, y: null };
+
+window.addEventListener('resize', () => {
+w = cvs.width = window.innerWidth;
+h = cvs.height = window.innerHeight;
+});
+window.dispatchEvent(new Event('resize'));
+
+window.addEventListener('mousemove', (e) => {
+mouse.x = e.clientX;
+mouse.y = e.clientY;
+});
+
+class Particle {
+constructor() {
+this.x = Math.random() * w;
+this.y = Math.random() * h;
+this.vx = (Math.random() - 0.5) * 0.5;
+this.vy = (Math.random() - 0.5) * 0.5;
+this.size = Math.random() * 2 + 1;
+}
+update() {
+this.x += this.vx;
+this.y += this.vy;
+if (this.x < 0 || this.x > w) this.vx *= -1;
+if (this.y < 0 || this.y > h) this.vy *= -1;
+
+// Mouse Interaction
+if (mouse.x) {
+const dx = mouse.x - this.x;
+const dy = mouse.y - this.y;
+const dist = Math.sqrt(dx*dx + dy*dy);
+if (dist < 150) {
+ctx.beginPath();
+ctx.strokeStyle = `rgba(56, 189, 248, ${1 - dist/150})`;
+ctx.lineWidth = 0.5;
+ctx.moveTo(this.x, this.y);
+ctx.lineTo(mouse.x, mouse.y);
+ctx.stroke();
+}
+}
+}
+draw() {
+ctx.fillStyle = 'rgba(255,255,255,0.5)';
+ctx.beginPath();
+ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+ctx.fill();
+}
+}
+
+for(let i=0; i<80; i++) particles.push(new Particle());
+
+function animate() {
+ctx.clearRect(0,0,w,h);
+particles.forEach(p => {
+p.update();
+p.draw();
+// Connect to neighbors
+particles.forEach(p2 => {
+const dx = p.x - p2.x;
+const dy = p.y - p2.y;
+const dist = Math.sqrt(dx*dx + dy*dy);
+if (dist < 100) {
+ctx.beginPath();
+ctx.strokeStyle = `rgba(129, 140, 248, ${0.1 * (1 - dist/100)})`;
+ctx.lineWidth = 0.2;
+ctx.moveTo(p.x, p.y);
+ctx.lineTo(p2.x, p2.y);
+ctx.stroke();
+}
+});
+});
+requestAnimationFrame(animate);
+}
+animate();
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+initCanvas();
+observeReveals();
+
+// Close lang on outside click
+window.addEventListener('click', (e) => {
+if (!e.target.closest('.lang-wrapper')) {
+document.getElementById('langWrapper').classList.remove('open');
+}
+});
+});
+</script>
+</body>
+</html>
