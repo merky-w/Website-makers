@@ -1,925 +1,948 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lumina Strategy | Elite Global Consultancy</title>
-
-<!-- Premium Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-/* --- CORE VARIABLES --- */
-:root {
---bg-deep: #05050a;
---bg-surface: rgba(20, 25, 40, 0.6);
---glass-border: rgba(255, 255, 255, 0.08);
---glass-shine: rgba(255, 255, 255, 0.15);
-
---accent-glow: #38bdf8;
---accent-secondary: #818cf8;
---accent-teal: #2dd4bf;
-
---text-primary: #f8fafc;
---text-secondary: #94a3b8;
-
---gradient-brand: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-
---nav-height: 90px;
---easing: cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-/* --- RESET & BASE --- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-font-family: 'Inter', sans-serif;
-background-color: var(--bg-deep);
-color: var(--text-primary);
-overflow-x: hidden;
--webkit-font-smoothing: antialiased;
-line-height: 1.6;
-}
-
-h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
-
-a { text-decoration: none; color: inherit; transition: 0.3s; }
-button { border: none; background: none; cursor: pointer; font-family: inherit; }
-ul { list-style: none; }
-
-/* --- BACKGROUND EFFECTS --- */
-#canvas-container {
-position: fixed;
-top: 0; left: 0; width: 100%; height: 100%;
-z-index: -2;
-background: radial-gradient(circle at 50% -20%, #1e1b4b, var(--bg-deep) 60%);
-}
-
-/* Ambient Glow Blobs */
-.glow-blob {
-position: fixed;
-width: 600px; height: 600px;
-background: radial-gradient(circle, rgba(56, 189, 248, 0.15), transparent 70%);
-border-radius: 50%;
-pointer-events: none;
-z-index: -1;
-filter: blur(60px);
-animation: pulseBlob 10s infinite alternate;
-}
-.blob-1 { top: -100px; left: -100px; animation-delay: 0s; }
-.blob-2 { bottom: -100px; right: -100px; background: radial-gradient(circle, rgba(129, 140, 248, 0.15), transparent 70%); animation-delay: 5s; }
-
-@keyframes pulseBlob {
-0% { transform: scale(1); opacity: 0.5; }
-100% { transform: scale(1.2); opacity: 0.8; }
-}
-
-/* --- NAVIGATION --- */
-.navbar {
-position: fixed;
-top: 0; width: 100%; height: var(--nav-height);
-display: flex; justify-content: space-between; align-items: center;
-padding: 0 6%;
-background: rgba(5, 5, 10, 0.7);
-backdrop-filter: blur(20px);
-border-bottom: 1px solid var(--glass-border);
-z-index: 1000;
-transition: all 0.4s ease;
-}
-
-.logo {
-font-size: 1.8rem;
-font-weight: 800;
-background: var(--gradient-brand);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-letter-spacing: -1px;
-cursor: pointer;
-position: relative;
-}
-
-.logo::after {
-content: '';
-position: absolute;
-bottom: -4px; left: 0; width: 30%; height: 2px;
-background: var(--gradient-brand);
-border-radius: 2px;
-}
-
-.nav-links { display: flex; gap: 2.5rem; }
-
-.nav-link {
-font-size: 0.95rem;
-font-weight: 500;
-color: var(--text-secondary);
-position: relative;
-padding: 5px 0;
-}
-
-.nav-link:hover, .nav-link.active { color: var(--text-primary); }
-
-.nav-link::before {
-content: '';
-position: absolute;
-bottom: 0; left: 0; width: 0%; height: 2px;
-background: var(--accent-glow);
-transition: width 0.3s var(--easing);
-box-shadow: 0 0 10px var(--accent-glow);
-}
-.nav-link:hover::before, .nav-link.active::before { width: 100%; }
-
-/* --- CONTROLS & LANGUAGE --- */
-.controls { display: flex; align-items: center; gap: 1.5rem; }
-
-.lang-wrapper { position: relative; }
-
-.lang-btn {
-background: rgba(255,255,255,0.03);
-border: 1px solid var(--glass-border);
-padding: 0.6rem 1.2rem;
-border-radius: 30px;
-color: var(--text-primary);
-font-size: 0.85rem;
-font-weight: 600;
-display: flex; align-items: center; gap: 0.5rem;
-transition: all 0.3s;
-}
-
-.lang-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
-
-.lang-menu {
-position: absolute;
-top: 120%; right: 0;
-background: rgba(15, 20, 30, 0.95);
-backdrop-filter: blur(15px);
-border: 1px solid var(--glass-border);
-border-radius: 12px;
-width: 160px;
-padding: 0.5rem;
-opacity: 0; transform: translateY(-10px) scale(0.95);
-pointer-events: none;
-transition: all 0.3s var(--easing);
-box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-overflow: hidden;
-}
-
-.lang-wrapper.open .lang-menu {
-opacity: 1; transform: translateY(0) scale(1);
-pointer-events: all;
-}
-
-.lang-opt {
-display: block; padding: 0.6rem 1rem;
-color: var(--text-secondary);
-border-radius: 6px; font-size: 0.9rem;
-transition: 0.2s;
-}
-.lang-opt:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-/* --- BUTTONS --- */
-.btn {
-padding: 0.8rem 2rem;
-border-radius: 8px;
-font-weight: 600;
-position: relative;
-overflow: hidden;
-transition: all 0.4s var(--easing);
-display: inline-flex; align-items: center; gap: 0.6rem;
-z-index: 1;
-}
-
-.btn-primary {
-background: var(--gradient-brand);
-color: white;
-border: 1px solid rgba(255,255,255,0.2);
-box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3);
-}
-
-.btn-primary::before {
-content: ''; position: absolute; top: 0; left: -100%;
-width: 100%; height: 100%;
-background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-transition: 0.5s; z-index: -1;
-}
-
-.btn-primary:hover {
-transform: translateY(-2px);
-box-shadow: 0 8px 30px rgba(129, 140, 248, 0.5);
-}
-.btn-primary:hover::before { left: 100%; }
-
-.btn-outline {
-background: transparent;
-border: 1px solid var(--glass-border);
-color: var(--text-primary);
-}
-.btn-outline:hover {
-border-color: var(--accent-glow);
-background: rgba(56, 189, 248, 0.05);
-text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
-}
-
-/* --- LAYOUT & SECTIONS --- */
-main { padding-top: var(--nav-height); min-height: 100vh; }
-
-.page-section {
-display: none;
-opacity: 0;
-transform: translateY(30px);
-transition: opacity 0.6s var(--easing), transform 0.6s var(--easing);
-padding: 4rem 6%;
-}
-
-.page-section.active { display: block; opacity: 1; transform: translateY(0); }
-
-/* --- HERO --- */
-.hero-grid {
-display: grid;
-grid-template-columns: 1.2fr 0.8fr;
-align-items: center;
-gap: 4rem;
-min-height: 85vh;
-}
-
-.hero-badge {
-display: inline-block;
-padding: 6px 16px;
-background: rgba(56, 189, 248, 0.1);
-border: 1px solid rgba(56, 189, 248, 0.3);
-border-radius: 20px;
-color: var(--accent-glow);
-font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
-margin-bottom: 1.5rem;
-box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
-}
-
-.hero-title {
-font-size: 4rem;
-line-height: 1.1;
-margin-bottom: 1.5rem;
-background: linear-gradient(to right, #fff, #94a3b8);
--webkit-background-clip: text;
--webkit-text-fill-color: transparent;
-}
-
-.hero-desc {
-font-size: 1.2rem;
-color: var(--text-secondary);
-margin-bottom: 2.5rem;
-max-width: 550px;
-}
-
-/* Glass Card Animation */
-.glass-card {
-background: var(--bg-surface);
-backdrop-filter: blur(20px);
-border: 1px solid var(--glass-border);
-border-top: 1px solid var(--glass-shine);
-padding: 2.5rem;
-border-radius: 24px;
-box-shadow: 0 30px 60px rgba(0,0,0,0.4);
-position: relative;
-transform-style: preserve-3d;
-animation: float 8s ease-in-out infinite;
-}
-
-.stat-row { display: flex; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); }
-.stat-row:last-child { border: none; margin: 0; padding: 0; }
-
-.stat-val { font-size: 2.5rem; font-weight: 700; color: var(--text-primary); font-family: 'Outfit'; }
-.stat-lbl { font-size: 0.9rem; color: var(--text-secondary); }
-
-/* --- CONTENT GRIDS --- */
-.section-header { text-align: center; margin-bottom: 5rem; max-width: 700px; margin-left: auto; margin-right: auto; }
-.section-title { font-size: 2.5rem; margin-bottom: 1rem; }
-.section-sub { color: var(--text-secondary); font-size: 1.1rem; }
-
-.grid-3 {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-gap: 2rem;
-}
-
-.card {
-background: var(--bg-surface);
-border: 1px solid var(--glass-border);
-border-radius: 20px;
-padding: 2.5rem;
-transition: all 0.4s var(--easing);
-position: relative;
-overflow: hidden;
-}
-
-.card:hover {
-transform: translateY(-8px);
-border-color: rgba(56, 189, 248, 0.4);
-box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-}
-
-.card-icon {
-width: 60px; height: 60px;
-border-radius: 12px;
-background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-display: flex; align-items: center; justify-content: center;
-font-size: 1.5rem; color: var(--accent-glow);
-margin-bottom: 1.5rem;
-border: 1px solid var(--glass-border);
-}
-
-/* --- PRICING --- */
-.pricing-card {
-background: var(--bg-surface);
-border: 1px solid var(--glass-border);
-border-radius: 24px;
-padding: 3rem 2rem;
-text-align: center;
-position: relative;
-transition: 0.4s;
-}
-
-.pricing-card.featured {
-border-color: var(--accent-secondary);
-background: linear-gradient(180deg, rgba(129, 140, 248, 0.05) 0%, rgba(20, 25, 40, 0.9) 100%);
-box-shadow: 0 0 30px rgba(129, 140, 248, 0.1);
-}
-
-.price-tag { font-size: 3rem; font-weight: 800; color: #fff; margin: 1.5rem 0; font-family: 'Outfit'; }
-.price-sub { font-size: 1rem; color: var(--text-secondary); font-weight: 400; }
-
-.feature-list li {
-margin: 1rem 0; color: var(--text-secondary); text-align: left;
-display: flex; align-items: center; gap: 10px;
-}
-.feature-list i { color: var(--accent-teal); }
-
-/* --- PROFILE --- */
-.profile-box {
-display: flex; gap: 4rem; align-items: center;
-background: var(--bg-surface); border: 1px solid var(--glass-border);
-border-radius: 24px; padding: 3rem;
-}
-.profile-pic {
-width: 250px; height: 250px; border-radius: 50%;
-object-fit: cover; border: 4px solid rgba(56, 189, 248, 0.2);
-box-shadow: 0 0 30px rgba(56, 189, 248, 0.1);
-}
-
-/* --- TOAST --- */
-.toast {
-position: fixed; bottom: 30px; right: 30px;
-background: rgba(15, 23, 42, 0.95);
-backdrop-filter: blur(10px);
-border: 1px solid var(--glass-border);
-border-left: 4px solid var(--accent-teal);
-color: #fff; padding: 1rem 1.5rem;
-border-radius: 8px;
-display: flex; align-items: center; gap: 1rem;
-transform: translateX(150%); transition: 0.5s var(--easing);
-box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-z-index: 2000;
-}
-.toast.active { transform: translateX(0); }
-
-/* --- ANIMATION UTILS --- */
-@keyframes float {
-0%, 100% { transform: translateY(0); }
-50% { transform: translateY(-15px); }
-}
-
-.fade-up { opacity: 0; transform: translateY(20px); transition: 0.8s var(--easing); }
-.fade-up.visible { opacity: 1; transform: translateY(0); }
-
-.delay-1 { transition-delay: 0.1s; }
-.delay-2 { transition-delay: 0.2s; }
-.delay-3 { transition-delay: 0.3s; }
-
-/* Mobile */
-@media (max-width: 768px) {
-.navbar { padding: 0 1.5rem; }
-.nav-links { display: none; }
-.hero-grid { grid-template-columns: 1fr; text-align: center; gap: 3rem; }
-.hero-desc { margin: 0 auto 2rem; }
-.cta-group { justify-content: center; }
-.profile-box { flex-direction: column; text-align: center; }
-.feature-list li { justify-content: flex-start; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MW Web Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
+        .gradient-text { background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.08); }
+        .glass-light { background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.06); }
+        .page { display: none; animation: fadeIn 0.5s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(59,130,246,0.3); } 50% { box-shadow: 0 0 40px rgba(59,130,246,0.6); } }
+        .animate-slide-up { animation: slideUp 0.6s ease forwards; }
+        .nav-link { position: relative; transition: all 0.3s ease; }
+        .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+        .project-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(59,130,246,0.2); }
+        .project-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .pricing-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .pricing-card:hover { transform: translateY(-12px) scale(1.02); }
+        .pricing-card.featured { border: 2px solid transparent; background-image: linear-gradient(rgba(15,23,42,0.9), rgba(15,23,42,0.9)), linear-gradient(135deg, #3b82f6, #8b5cf6); background-origin: border-box; background-clip: padding-box, border-box; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(59,130,246,0.4); }
+        .hero-bg { background-image: url('https://image.qwenlm.ai/public_source/d41eff2c-ab23-41cc-b9a7-6c1cf08915b3/12a98177b-4992-48ec-84e7-e50c90257830.png'); background-size: cover; background-position: center; }
+        .lang-btn { transition: all 0.3s ease; }
+        .lang-btn:hover { transform: scale(1.05); box-shadow: 0 10px 40px rgba(59,130,246,0.3); }
+        .floating { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .grid-pattern { background-image: radial-gradient(circle, rgba(59,130,246,0.1) 1px, transparent 1px); background-size: 30px 30px; }
+        input:focus, textarea:focus { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+        .stat-number { background: linear-gradient(135deg, #3b82f6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 4px; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-950 text-white overflow-x-hidden">
 
-<!-- Ambient Glows -->
-<div class="glow-blob blob-1"></div>
-<div class="glow-blob blob-2"></div>
+    <!-- Language Selection Screen -->
+    <div id="langScreen" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center">
+        <div class="absolute inset-0 hero-bg opacity-20"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/60 to-slate-950/90"></div>
+        <div class="relative z-10 text-center px-6 max-w-3xl mx-auto">
+            <div class="mb-8">
+                <div class="inline-block mb-6">
+                    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold shadow-2xl">MW</div>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-bold mb-4" id="langWelcome">Welcome</h1>
+                <p class="text-lg md:text-xl text-slate-400" id="langSubtitle">Choose your language to continue</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                <button onclick="selectLanguage('en')" class="lang-btn glass rounded-2xl p-6 text-left group cursor-pointer">
+                    <div class="text-4xl mb-3">🇬🇧</div>
+                    <div class="text-xl font-semibold">English</div>
+                    <div class="text-sm text-slate-400 mt-1">Click to continue</div>
+                </button>
+                <button onclick="selectLanguage('sr')" class="lang-btn glass rounded-2xl p-6 text-left group cursor-pointer">
+                    <div class="text-4xl mb-3">🇸</div>
+                    <div class="text-xl font-semibold">Srpski</div>
+                    <div class="text-sm text-slate-400 mt-1">Klikni za nastavak</div>
+                </button>
+                <button onclick="selectLanguage('hu')" class="lang-btn glass rounded-2xl p-6 text-left group cursor-pointer">
+                    <div class="text-4xl mb-3">🇭</div>
+                    <div class="text-xl font-semibold">Magyar</div>
+                    <div class="text-sm text-slate-400 mt-1">Kattints a folytatáshoz</div>
+                </button>
+            </div>
+        </div>
+    </div>
 
-<!-- Smart Interactive Canvas -->
-<div id="canvas-container">
-<canvas id="bgCanvas"></canvas>
-</div>
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 glass opacity-0 transition-opacity duration-500" style="display:none;">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm">MW</div>
+                <span class="text-lg font-bold hidden sm:block">MW Studio</span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <button onclick="navigateTo('home')" class="nav-link text-sm font-medium text-slate-300 hover:text-white" data-page="home" data-i18n="nav_home">Home</button>
+                <button onclick="navigateTo('about')" class="nav-link text-sm font-medium text-slate-300 hover:text-white" data-page="about" data-i18n="nav_about">About</button>
+                <button onclick="navigateTo('projects')" class="nav-link text-sm font-medium text-slate-300 hover:text-white" data-page="projects" data-i18n="nav_projects">Projects</button>
+                <button onclick="navigateTo('pricing')" class="nav-link text-sm font-medium text-slate-300 hover:text-white" data-page="pricing" data-i18n="nav_pricing">Pricing</button>
+                <button onclick="navigateTo('contact')" class="nav-link text-sm font-medium text-slate-300 hover:text-white" data-page="contact" data-i18n="nav_contact">Contact</button>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <button onclick="toggleLangMenu()" class="glass-light rounded-lg px-3 py-2 text-sm flex items-center gap-2 hover:bg-white/10 transition cursor-pointer">
+                        <span id="currentLangFlag">🇬🇧</span>
+                        <span id="currentLangCode" class="hidden sm:inline">EN</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="langMenu" class="absolute right-0 top-full mt-2 glass rounded-xl p-2 hidden min-w-[140px]">
+                        <button onclick="changeLanguage('en')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 text-sm flex items-center gap-2 cursor-pointer">🇬🇧 English</button>
+                        <button onclick="changeLanguage('sr')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 text-sm flex items-center gap-2 cursor-pointer">🇸 Srpski</button>
+                        <button onclick="changeLanguage('hu')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 text-sm flex items-center gap-2 cursor-pointer">🇭🇺 Magyar</button>
+                    </div>
+                </div>
+                <button onclick="navigateTo('contact')" class="btn-primary px-5 py-2 rounded-xl text-sm font-semibold cursor-pointer" data-i18n="nav_cta">Get Started</button>
+                <button onclick="toggleMobileMenu()" class="md:hidden glass-light rounded-lg p-2 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden hidden glass border-t border-white/5">
+            <div class="px-6 py-4 flex flex-col gap-3">
+                <button onclick="navigateTo('home'); toggleMobileMenu()" class="text-left py-2 text-slate-300 hover:text-white" data-i18n="nav_home">Home</button>
+                <button onclick="navigateTo('about'); toggleMobileMenu()" class="text-left py-2 text-slate-300 hover:text-white" data-i18n="nav_about">About</button>
+                <button onclick="navigateTo('projects'); toggleMobileMenu()" class="text-left py-2 text-slate-300 hover:text-white" data-i18n="nav_projects">Projects</button>
+                <button onclick="navigateTo('pricing'); toggleMobileMenu()" class="text-left py-2 text-slate-300 hover:text-white" data-i18n="nav_pricing">Pricing</button>
+                <button onclick="navigateTo('contact'); toggleMobileMenu()" class="text-left py-2 text-slate-300 hover:text-white" data-i18n="nav_contact">Contact</button>
+            </div>
+        </div>
+    </nav>
 
-<!-- Navigation -->
-<nav class="navbar">
-<div class="logo" onclick="router('home')">LUMINA.</div>
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page">
+        <!-- Hero -->
+        <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+            <div class="absolute inset-0 hero-bg opacity-30"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/50 to-slate-950"></div>
+            <div class="absolute inset-0 grid-pattern opacity-30"></div>
+            <div class="relative z-10 max-w-6xl mx-auto px-6 text-center py-32">
+                <div class="inline-block mb-6 px-4 py-2 glass-light rounded-full text-sm text-blue-400 animate-slide-up">
+                    <span data-i18n="hero_badge"> Professional Web Development</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight animate-slide-up" style="animation-delay: 0.1s;">
+                    <span data-i18n="hero_title1">We Build</span><br>
+                    <span class="gradient-text" data-i18n="hero_title2">Digital Experiences</span>
+                </h1>
+                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 animate-slide-up" style="animation-delay: 0.2s;" data-i18n="hero_desc">
+                    Modern, fast, and beautiful websites crafted with precision. From simple landing pages to complex systems — we bring your vision to life.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style="animation-delay: 0.3s;">
+                    <button onclick="navigateTo('projects')" class="btn-primary px-8 py-4 rounded-2xl font-semibold text-lg cursor-pointer" data-i18n="hero_cta1">View Our Work</button>
+                    <button onclick="navigateTo('pricing')" class="glass px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-white/10 transition cursor-pointer" data-i18n="hero_cta2">See Pricing</button>
+                </div>
+            </div>
+        </section>
 
-<ul class="nav-links">
-<li><a class="nav-link active" onclick="router('home')" data-i18n="nav_home">Home</a></li>
-<li><a class="nav-link" onclick="router('about-us')" data-i18n="nav_about_us">About Us</a></li>
-<li><a class="nav-link" onclick="router('about-me')" data-i18n="nav_about_me">About Me</a></li>
-<li><a class="nav-link" onclick="router('pricing')" data-i18n="nav_pricing">Pricing</a></li>
-</ul>
+        <!-- Stats -->
+        <section class="py-20 relative">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="glass-light rounded-2xl p-6 text-center">
+                        <div class="text-4xl font-bold stat-number mb-1">3+</div>
+                        <div class="text-sm text-slate-400" data-i18n="stat_projects">Projects Delivered</div>
+                    </div>
+                    <div class="glass-light rounded-2xl p-6 text-center">
+                        <div class="text-4xl font-bold stat-number mb-1">100%</div>
+                        <div class="text-sm text-slate-400" data-i18n="stat_satisfaction">Client Satisfaction</div>
+                    </div>
+                    <div class="glass-light rounded-2xl p-6 text-center">
+                        <div class="text-4xl font-bold stat-number mb-1">3</div>
+                        <div class="text-sm text-slate-400" data-i18n="stat_languages">Languages Supported</div>
+                    </div>
+                    <div class="glass-light rounded-2xl p-6 text-center">
+                        <div class="text-4xl font-bold stat-number mb-1">24/7</div>
+                        <div class="text-sm text-slate-400" data-i18n="stat_support">Support Available</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<div class="controls">
-<!-- Smart Language Dropdown -->
-<div class="lang-wrapper" id="langWrapper">
-<button class="lang-btn" onclick="toggleLangMenu()">
-<i class="fa-solid fa-globe"></i>
-<span id="currLang">EN</span>
-<i class="fa-solid fa-chevron-down" style="font-size: 0.7em;"></i>
-</button>
-<div class="lang-menu">
-<a href="#" class="lang-opt" onclick="setLanguage('en')">English</a>
-<a href="#" class="lang-opt" onclick="setLanguage('es')">Español</a>
-<a href="#" class="lang-opt" onclick="setLanguage('fr')">Français</a>
-<a href="#" class="lang-opt" onclick="setLanguage('it')">Italiano</a>
-<a href="#" class="lang-opt" onclick="setLanguage('pl')">Polski</a>
-<a href="#" class="lang-opt" onclick="setLanguage('da')">Dansk</a>
-<a href="#" class="lang-opt" onclick="setLanguage('sr')">Srpski</a>
-<a href="#" class="lang-opt" onclick="setLanguage('hu')">Magyar</a>
-</div>
-</div>
-<button class="btn btn-primary" onclick="showToast(t('toast_booking'))" data-i18n="btn_book">
-Book Call
-</button>
-</div>
-</nav>
+        <!-- Services Preview -->
+        <section class="py-20 relative">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-5xl font-bold mb-4" data-i18n="services_title">What We Offer</h2>
+                    <p class="text-slate-400 max-w-xl mx-auto" data-i18n="services_subtitle">From concept to launch, we handle everything</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="glass-light rounded-2xl p-8 hover:bg-white/5 transition group">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition">🎨</div>
+                        <h3 class="text-xl font-bold mb-3" data-i18n="service1_title">Custom Design</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="service1_desc">Unique, modern designs tailored to your brand identity and business goals.</p>
+                    </div>
+                    <div class="glass-light rounded-2xl p-8 hover:bg-white/5 transition group">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition">⚡</div>
+                        <h3 class="text-xl font-bold mb-3" data-i18n="service2_title">Fast Performance</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="service2_desc">Optimized code and lightweight architecture for blazing fast load times.</p>
+                    </div>
+                    <div class="glass-light rounded-2xl p-8 hover:bg-white/5 transition group">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition">📱</div>
+                        <h3 class="text-xl font-bold mb-3" data-i18n="service3_title">Responsive</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed" data-i18n="service3_desc">Perfect experience on every device — desktop, tablet, and mobile.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
-<main>
-<!-- HOME -->
-<section id="home" class="page-section active">
-<div class="hero-grid">
-<div class="hero-content">
-<span class="hero-badge fade-up visible" data-i18n="hero_tag">Elite Consultancy</span>
-<h1 class="hero-title fade-up delay-1 visible" data-i18n="hero_title">Scale Your Brand With Precision.</h1>
-<p class="hero-desc fade-up delay-2 visible" data-i18n="hero_sub">We don't just decorate. We build outcome-driven digital systems that convert visitors into loyal clients.</p>
-<div class="cta-group fade-up delay-3 visible">
-<button class="btn btn-primary" onclick="router('pricing')" data-i18n="btn_view_pricing">
-View Pricing <i class="fa-solid fa-arrow-right"></i>
-</button>
-<button class="btn btn-outline" onclick="router('about-us')" data-i18n="btn_learn_more">Learn More</button>
-</div>
-</div>
-<div class="hero-visual fade-up delay-2 visible">
-<div class="glass-card">
-<div class="stat-row">
-<div>
-<div class="stat-val">300%</div>
-<div class="stat-lbl" data-i18n="stat_roi">Avg. ROI</div>
-</div>
-<div>
-<div class="stat-val">50+</div>
-<div class="stat-lbl" data-i18n="stat_clients">Global Brands</div>
-</div>
-</div>
-<div class="stat-row">
-<div>
-<div class="stat-val">$10M</div>
-<div class="stat-lbl" data-i18n="stat_revenue">Revenue Generated</div>
-</div>
-<div>
-<div class="stat-val">24/7</div>
-<div class="stat-lbl" data-i18n="stat_support">Support</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+    <!-- ABOUT PAGE -->
+    <div id="page-about" class="page">
+        <section class="pt-32 pb-20 relative">
+            <div class="absolute inset-0 hero-bg opacity-10"></div>
+            <div class="max-w-6xl mx-auto px-6 relative z-10">
+                <div class="text-center mb-16">
+                    <div class="inline-block mb-4 px-4 py-2 glass-light rounded-full text-sm text-blue-400" data-i18n="about_badge">✦ About Us</div>
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6" data-i18n="about_title">The Story Behind <span class="gradient-text">MW Studio</span></h1>
+                    <p class="text-lg text-slate-400 max-w-2xl mx-auto" data-i18n="about_intro">We are passionate developers dedicated to building exceptional digital experiences for clients around the world.</p>
+                </div>
 
-<div class="section-header fade-up" style="margin-top: 6rem;">
-<span class="hero-badge" data-i18n="process_tag">The Process</span>
-<h2 class="section-title" data-i18n="process_title">Why Generic Websites Fail</h2>
-<p class="section-sub" data-i18n="process_sub">Most sites are aesthetic decorations. We build conversion engines.</p>
-</div>
+                <div class="grid md:grid-cols-2 gap-12 items-center mb-20">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6" data-i18n="about_who_title">Who We Are</h2>
+                        <p class="text-slate-400 leading-relaxed mb-4" data-i18n="about_who_p1">MW Studio is a web development studio focused on creating modern, professional websites and web applications. We combine clean code with stunning design to deliver results that exceed expectations.</p>
+                        <p class="text-slate-400 leading-relaxed mb-6" data-i18n="about_who_p2">Whether you need a simple landing page, a complex database-driven system, or a full custom solution — we have the skills and experience to make it happen.</p>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="glass-light px-4 py-2 rounded-full text-sm">HTML/CSS</span>
+                            <span class="glass-light px-4 py-2 rounded-full text-sm">JavaScript</span>
+                            <span class="glass-light px-4 py-2 rounded-full text-sm">React</span>
+                            <span class="glass-light px-4 py-2 rounded-full text-sm">Node.js</span>
+                            <span class="glass-light px-4 py-2 rounded-full text-sm">Databases</span>
+                            <span class="glass-light px-4 py-2 rounded-full text-sm">UI/UX</span>
+                        </div>
+                    </div>
+                    <div class="glass-light rounded-3xl p-8">
+                        <h3 class="text-xl font-bold mb-6" data-i18n="about_values_title">Our Values</h3>
+                        <div class="space-y-4">
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">✓</div>
+                                <div>
+                                    <div class="font-semibold mb-1" data-i18n="value1_title">Quality First</div>
+                                    <div class="text-sm text-slate-400" data-i18n="value1_desc">Every project is built with attention to detail and best practices.</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">✓</div>
+                                <div>
+                                    <div class="font-semibold mb-1" data-i18n="value2_title">Client Focused</div>
+                                    <div class="text-sm text-slate-400" data-i18n="value2_desc">Your vision and satisfaction are our top priorities.</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center flex-shrink-0">✓</div>
+                                <div>
+                                    <div class="font-semibold mb-1" data-i18n="value3_title">Modern Tech</div>
+                                    <div class="text-sm text-slate-400" data-i18n="value3_desc">We use the latest tools and technologies for optimal results.</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">✓</div>
+                                <div>
+                                    <div class="font-semibold mb-1" data-i18n="value4_title">Affordable</div>
+                                    <div class="text-sm text-slate-400" data-i18n="value4_desc">Professional quality at prices that work for everyone.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-<div class="grid-3">
-<div class="card fade-up delay-1">
-<div class="card-icon"><i class="fa-solid fa-bullseye"></i></div>
-<h4 data-i18n="card_1_title">Clear Targeting</h4>
-<p style="color:var(--text-secondary); margin-top:0.5rem; font-size:0.9rem;" data-i18n="card_1_desc">Define exactly who your audience is.</p>
-</div>
-<div class="card fade-up delay-2">
-<div class="card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-<h4 data-i18n="card_2_title">Intentional Motion</h4>
-<p style="color:var(--text-secondary); margin-top:0.5rem; font-size:0.9rem;" data-i18n="card_2_desc">Animations guide attention to key actions.</p>
-</div>
-<div class="card fade-up delay-3">
-<div class="card-icon"><i class="fa-solid fa-chart-line"></i></div>
-<h4 data-i18n="card_3_title">Conversion First</h4>
-<p style="color:var(--text-secondary); margin-top:0.5rem; font-size:0.9rem;" data-i18n="card_3_desc">Designed to move visitors toward a goal.</p>
-</div>
-</div>
-</section>
+                <!-- Process -->
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4" data-i18n="process_title">How We Work</h2>
+                    <p class="text-slate-400" data-i18n="process_subtitle">A simple, transparent process from start to finish</p>
+                </div>
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="glass-light rounded-2xl p-6 text-center relative">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">1</div>
+                        <h4 class="font-bold mt-4 mb-2" data-i18n="step1_title">Consultation</h4>
+                        <p class="text-sm text-slate-400" data-i18n="step1_desc">We discuss your needs and goals</p>
+                    </div>
+                    <div class="glass-light rounded-2xl p-6 text-center relative">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">2</div>
+                        <h4 class="font-bold mt-4 mb-2" data-i18n="step2_title">Design</h4>
+                        <p class="text-sm text-slate-400" data-i18n="step2_desc">We create a mockup for your approval</p>
+                    </div>
+                    <div class="glass-light rounded-2xl p-6 text-center relative">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">3</div>
+                        <h4 class="font-bold mt-4 mb-2" data-i18n="step3_title">Development</h4>
+                        <p class="text-sm text-slate-400" data-i18n="step3_desc">We build your website with care</p>
+                    </div>
+                    <div class="glass-light rounded-2xl p-6 text-center relative">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-sm font-bold">4</div>
+                        <h4 class="font-bold mt-4 mb-2" data-i18n="step4_title">Launch</h4>
+                        <p class="text-sm text-slate-400" data-i18n="step4_desc">Your site goes live, ready for the world</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
-<!-- ABOUT US -->
-<section id="about-us" class="page-section">
-<div class="section-header fade-up">
-<span class="hero-badge" data-i18n="about_us_tag">Our Agency</span>
-<h2 class="section-title" data-i18n="about_us_title">Collective Excellence</h2>
-<p class="section-sub" data-i18n="about_us_sub">We are a team of strategists, designers, and engineers obsessed with performance.</p>
-</div>
-<div class="grid-3">
-<div class="card fade-up delay-1" style="text-align:center;">
-<img src="https://picsum.photos/seed/team1/200/200" style="width:100px; height:100px; border-radius:50%; margin-bottom:1rem; object-fit:cover;">
-<h4>Sarah Jenkins</h4>
-<p style="color:var(--accent-glow); font-size:0.85rem;" data-i18n="role_strategy">Head of Strategy</p>
-</div>
-<div class="card fade-up delay-2" style="text-align:center;">
-<img src="https://picsum.photos/seed/team2/200/200" style="width:100px; height:100px; border-radius:50%; margin-bottom:1rem; object-fit:cover;">
-<h4>David Chen</h4>
-<p style="color:var(--accent-glow); font-size:0.85rem;" data-i18n="role_creative">Creative Director</p>
-</div>
-<div class="card fade-up delay-3" style="text-align:center;">
-<img src="https://picsum.photos/seed/team3/200/200" style="width:100px; height:100px; border-radius:50%; margin-bottom:1rem; object-fit:cover;">
-<h4>Elena Rodriguez</h4>
-<p style="color:var(--accent-glow); font-size:0.85rem;" data-i18n="role_dev">Lead Developer</p>
-</div>
-</div>
-</section>
+    <!-- PROJECTS PAGE -->
+    <div id="page-projects" class="page">
+        <section class="pt-32 pb-20 relative">
+            <div class="absolute inset-0 hero-bg opacity-10"></div>
+            <div class="max-w-6xl mx-auto px-6 relative z-10">
+                <div class="text-center mb-16">
+                    <div class="inline-block mb-4 px-4 py-2 glass-light rounded-full text-sm text-blue-400" data-i18n="projects_badge">✦ Our Portfolio</div>
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6" data-i18n="projects_title">Featured <span class="gradient-text">Projects</span></h1>
+                    <p class="text-lg text-slate-400 max-w-2xl mx-auto" data-i18n="projects_subtitle">Real websites we've built — explore our work below</p>
+                </div>
 
-<!-- ABOUT ME -->
-<section id="about-me" class="page-section">
-<div class="profile-box fade-up">
-<img src="https://picsum.photos/seed/founder/500/500" alt="Founder" class="profile-pic">
-<div>
-<span class="hero-badge" data-i18n="founder_tag">The Visionary</span>
-<h2 style="font-size: 2.5rem; margin-bottom: 1rem;" data-i18n="founder_name">Alex Mercer</h2>
-<p style="color: var(--text-secondary); margin-bottom: 1.5rem;" data-i18n="founder_desc">
-With over 15 years in digital product design, I've seen the industry shift from flashiness to functionality. I founded Lumina on the principle that <strong>design is not art, it is a tool for business growth.</strong>
-</p>
-<ul style="margin-bottom: 2rem; color: var(--text-primary);">
-<li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-check" style="color: var(--accent-teal); margin-right: 10px;"></i> <span data-i18n="founder_pt1">Former Design Lead at TechCorp</span></li>
-<li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-check" style="color: var(--accent-teal); margin-right: 10px;"></i> <span data-i18n="founder_pt2">Speaker at WebSummit 2023</span></li>
-<li><i class="fa-solid fa-check" style="color: var(--accent-teal); margin-right: 10px;"></i> <span data-i18n="founder_pt3">Author of "Outcome-Driven UI"</span></li>
-</ul>
-<button class="btn btn-outline" onclick="showToast(t('toast_linkedin'))">
-<i class="fa-brands fa-linkedin"></i> LinkedIn
-</button>
-</div>
-</div>
-</section>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Project 1: Royal -->
+                    <div class="project-card glass-light rounded-3xl overflow-hidden group">
+                        <div class="relative h-48 bg-gradient-to-br from-amber-500/20 to-orange-600/20 overflow-hidden">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-6xl">👑</div>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-medium">Website</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Royal</h3>
+                            <p class="text-sm text-slate-400 mb-4" data-i18n="project1_desc">A stylish and modern website with elegant design and smooth user experience.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">HTML</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">CSS</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">JavaScript</span>
+                            </div>
+                            <a href="https://merky-w.github.io/Royal/" target="_blank" class="inline-flex items-center gap-2 text-blue-400 text-sm font-medium hover:text-blue-300 transition">
+                                <span data-i18n="project_view">View Project</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                        </div>
+                    </div>
 
-<!-- PRICING -->
-<section id="pricing" class="page-section">
-<div class="section-header fade-up">
-<span class="hero-badge" data-i18n="pricing_tag">Investment</span>
-<h2 class="section-title" data-i18n="pricing_title">Select Your Tier</h2>
-<p class="section-sub" data-i18n="pricing_sub">Transparent pricing for scalable results.</p>
-</div>
+                    <!-- Project 2: Braca -->
+                    <div class="project-card glass-light rounded-3xl overflow-hidden group">
+                        <div class="relative h-48 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 overflow-hidden">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-6xl"></div>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-medium">Multi-language</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Braca</h3>
+                            <p class="text-sm text-slate-400 mb-4" data-i18n="project2_desc">A multilingual website supporting multiple languages with a clean, accessible interface.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">HTML</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">CSS</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">i18n</span>
+                            </div>
+                            <a href="https://merky-w.github.io/Braca/" target="_blank" class="inline-flex items-center gap-2 text-blue-400 text-sm font-medium hover:text-blue-300 transition">
+                                <span data-i18n="project_view">View Project</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                        </div>
+                    </div>
 
-<div class="grid-3">
-<div class="pricing-card fade-up delay-1">
-<h4 data-i18n="plan_basic">Starter</h4>
-<div class="price-tag">$2,500<span class="price-sub">/mo</span></div>
-<p style="color:var(--text-secondary); margin-bottom:2rem;" data-i18n="plan_basic_desc">For early-stage brands.</p>
-<ul class="feature-list">
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_1">Brand Audit</span></li>
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_2">Landing Page Design</span></li>
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_3">Monthly Report</span></li>
-</ul>
-<button class="btn btn-outline" onclick="showToast(t('toast_select_starter'))" data-i18n="btn_select">Select</button>
-</div>
+                    <!-- Project 3: Online Competition -->
+                    <div class="project-card glass-light rounded-3xl overflow-hidden group lg:col-span-2 lg:row-span-1">
+                        <div class="relative h-48 bg-gradient-to-br from-purple-500/20 to-pink-600/20 overflow-hidden">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-6xl"></div>
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
+                            <div class="absolute bottom-4 left-4 right-4">
+                                <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium" data-i18n="project3_tag">Full System</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 mb-2">
+                                <h3 class="text-xl font-bold">Online Competition</h3>
+                                <span class="px-2 py-0.5 rounded bg-gradient-to-r from-blue-500 to-purple-600 text-xs font-bold" data-i18n="featured">FEATURED</span>
+                            </div>
+                            <p class="text-sm text-slate-400 mb-4" data-i18n="project3_desc">Our most ambitious project — a complete online competition platform with user accounts, real-time features, and a full backend system. This showcases our ability to build complex, production-ready applications.</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">Full Stack</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">Database</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">Auth</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-slate-400">Real-time</span>
+                            </div>
+                            <a href="https://merky-w.github.io/Online-Competition/" target="_blank" class="inline-flex items-center gap-2 text-blue-400 text-sm font-medium hover:text-blue-300 transition">
+                                <span data-i18n="project_view">View Project</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-<div class="pricing-card featured fade-up delay-2">
-<div style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--accent-secondary); color:#000; padding:5px 15px; border-radius:20px; font-weight:700; font-size:0.8rem;" data-i18n="best_value">Best Value</div>
-<h4 data-i18n="plan_growth">Growth</h4>
-<div class="price-tag">$5,000<span class="price-sub">/mo</span></div>
-<p style="color:var(--text-secondary); margin-bottom:2rem;" data-i18n="plan_growth_desc">Full strategy for scaling.</p>
-<ul class="feature-list">
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_4">Complete Web System</span></li>
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_5">SEO & Copywriting</span></li>
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_6">Weekly Calls</span></li>
-</ul>
-<button class="btn btn-primary" onclick="showToast(t('toast_select_growth'))" data-i18n="btn_select">Select</button>
-</div>
+                <!-- CTA -->
+                <div class="mt-20 glass-light rounded-3xl p-12 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4" data-i18n="projects_cta_title">Want a project like these?</h2>
+                    <p class="text-slate-400 mb-8 max-w-xl mx-auto" data-i18n="projects_cta_desc">Let's work together to bring your idea to life. Get in touch and we'll discuss your project.</p>
+                    <button onclick="navigateTo('contact')" class="btn-primary px-8 py-4 rounded-2xl font-semibold cursor-pointer" data-i18n="projects_cta_btn">Start a Project</button>
+                </div>
+            </div>
+        </section>
+    </div>
 
-<div class="pricing-card fade-up delay-3">
-<h4 data-i18n="plan_enterprise">Enterprise</h4>
-<div class="price-tag" data-i18n="plan_price_custom">Custom</div>
-<p style="color:var(--text-secondary); margin-bottom:2rem;" data-i18n="plan_ent_desc">For market leaders.</p>
-<ul class="feature-list">
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_7">Dedicated Team</span></li>
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_8">Custom App Dev</span></li>
-<li><i class="fa-solid fa-check"></i> <span data-i18n="feat_9">24/7 Priority</span></li>
-</ul>
-<button class="btn btn-outline" onclick="showToast(t('toast_contact_sales'))" data-i18n="btn_contact">Contact</button>
-</div>
-</div>
-</section>
-</main>
+    <!-- PRICING PAGE -->
+    <div id="page-pricing" class="page">
+        <section class="pt-32 pb-20 relative">
+            <div class="absolute inset-0 hero-bg opacity-10"></div>
+            <div class="max-w-6xl mx-auto px-6 relative z-10">
+                <div class="text-center mb-16">
+                    <div class="inline-block mb-4 px-4 py-2 glass-light rounded-full text-sm text-blue-400" data-i18n="pricing_badge">✦ Pricing</div>
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6" data-i18n="pricing_title">Simple, Transparent <span class="gradient-text">Pricing</span></h1>
+                    <p class="text-lg text-slate-400 max-w-2xl mx-auto" data-i18n="pricing_subtitle">Choose the plan that fits your needs. No hidden fees, no surprises.</p>
+                </div>
 
-<div id="toast" class="toast">
-<i class="fa-solid fa-circle-check" style="color: var(--accent-teal);"></i>
-<span id="toastMsg">Notification</span>
-</div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Starter -->
+                    <div class="pricing-card glass-light rounded-3xl p-8 flex flex-col">
+                        <div class="mb-6">
+                            <div class="text-sm text-slate-400 mb-2" data-i18n="plan1_name">Starter</div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-5xl font-bold">€50</span>
+                            </div>
+                            <div class="text-sm text-slate-500 mt-1" data-i18n="plan1_period">one-time payment</div>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-6" data-i18n="plan1_desc">Perfect for simple landing pages and personal websites.</p>
+                        <ul class="space-y-3 mb-8 flex-grow">
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_single">Single page website</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_responsive">Responsive design</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_basic">Basic styling</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_contact">Contact form</span></li>
+                            <li class="flex items-center gap-3 text-sm text-slate-600"><span>✗</span> <span data-i18n="feat_database">Database</span></li>
+                            <li class="flex items-center gap-3 text-sm text-slate-600"><span></span> <span data-i18n="feat_custom">Custom features</span></li>
+                        </ul>
+                        <button onclick="navigateTo('contact')" class="w-full glass py-3 rounded-xl font-semibold hover:bg-white/10 transition cursor-pointer" data-i18n="plan_choose">Choose Plan</button>
+                    </div>
 
-<script>
-/* --- TRANSLATIONS (All 8 Languages) --- */
-const translations = {
-en: {
-nav_home:"Home", nav_about_us:"About Us", nav_about_me:"About Me", nav_pricing:"Pricing", btn_book:"Book Call",
-hero_tag:"Elite Consultancy", hero_title:"Scale Your Brand With Precision.", hero_sub:"We don't just decorate. We build outcome-driven digital systems that convert visitors into loyal clients.",
-btn_view_pricing:"View Pricing", btn_learn_more:"Learn More", stat_roi:"Avg. ROI", stat_clients:"Global Brands", stat_revenue:"Revenue Generated", stat_support:"Support",
-process_tag:"The Process", process_title:"Why Generic Websites Fail", process_sub:"Most sites are aesthetic decorations. We build conversion engines.",
-card_1_title:"Clear Targeting", card_1_desc:"Define exactly who your audience is.", card_2_title:"Intentional Motion", card_2_desc:"Animations guide attention to key actions.", card_3_title:"Conversion First", card_3_desc:"Designed to move visitors toward a goal.",
-about_us_tag:"Our Agency", about_us_title:"Collective Excellence", about_us_sub:"We are a team of strategists, designers, and engineers obsessed with performance.",
-role_strategy:"Head of Strategy", role_creative:"Creative Director", role_dev:"Lead Developer",
-founder_tag:"The Visionary", founder_name:"Alex Mercer", founder_desc:"With over 15 years in digital product design, I've seen the industry shift from flashiness to functionality. I founded Lumina on the principle that design is not art, it is a tool for business growth.",
-founder_pt1:"Former Design Lead at TechCorp", founder_pt2:"Speaker at WebSummit 2023", founder_pt3:"Author of 'Outcome-Driven UI'",
-pricing_tag:"Investment", pricing_title:"Select Your Tier", pricing_sub:"Transparent pricing for scalable results.",
-plan_basic:"Starter", plan_basic_desc:"For early-stage brands.", plan_growth:"Growth", plan_growth_desc:"Full strategy for scaling.", plan_enterprise:"Enterprise", plan_ent_desc:"For market leaders.", plan_price_custom:"Custom",
-best_value:"Best Value", btn_select:"Select", btn_contact:"Contact",
-feat_1:"Brand Audit", feat_2:"Landing Page Design", feat_3:"Monthly Report", feat_4:"Complete Web System", feat_5:"SEO & Copywriting", feat_6:"Weekly Calls", feat_7:"Dedicated Team", feat_8:"Custom App Dev", feat_9:"24/7 Priority",
-toast_booking:"Opening Calendar...", toast_linkedin:"Connecting to LinkedIn...", toast_select_starter:"Starter Plan Selected", toast_select_growth:"Growth Plan Selected", toast_contact_sales:"Contacting Sales..."
-},
-es: {
-nav_home:"Inicio", nav_about_us:"Sobre Nosotros", nav_about_me:"Sobre Mí", nav_pricing:"Precios", btn_book:"Reservar Llamada",
-hero_tag:"Consultoría de Élite", hero_title:"Escala Tu Marca Con Precisión.", hero_sub:"No solo decoramos. Construimos sistemas digitales orientados a resultados que convierten visitantes en clientes leales.",
-btn_view_pricing:"Ver Precios", btn_learn_more:"Saber Más", stat_roi:"ROI Promedio", stat_clients:"Marcas Globales", stat_revenue:"Ingresos", stat_support:"Soporte",
-process_tag:"El Proceso", process_title:"Por Qué Los Sitios Fallan", process_sub:"Construimos motores de conversión.",
-card_1_title:"Segmentación Clara", card_1_desc:"Define exactamente a tu audiencia.", card_2_title:"Movimiento Intencional", card_2_desc:"Las animaciones guían la atención.", card_3_title:"Conversión Primero", card_3_desc:"Diseñado para mover al visitante.",
-about_us_tag:"Nuestra Agencia", about_us_title:"Excelencia Colectiva", about_us_sub:"Somos un equipo de estrategas, diseñadores e ingenieros.",
-role_strategy:"Jefe de Estrategia", role_creative:"Director Creativo", role_dev:"Líder de Desarrollo",
-founder_tag:"El Visionario", founder_name:"Alex Mercer", founder_desc:"Con más de 15 años en diseño de productos digitales, vi pasar la industria del brillo a la funcionalidad. Fundé Lumina con el principio de que el diseño no es arte, es una herramienta para el crecimiento.",
-founder_pt1:"Ex Jefe de Diseño en TechCorp", founder_pt2:"Ponente en WebSummit 2023", founder_pt3:"Autor de 'UI Orientado a Resultados'",
-pricing_tag:"Inversión", pricing_title:"Elige Tu Nivel", pricing_sub:"Precios transparentes.",
-plan_basic:"Inicial", plan_basic_desc:"Para marcas iniciales.", plan_growth:"Crecimiento", plan_growth_desc:"Estrategia completa para escalar.", plan_enterprise:"Empresarial", plan_ent_desc:"Para líderes de mercado.", plan_price_custom:"A Medida",
-best_value:"Mejor Valor", btn_select:"Seleccionar", btn_contact:"Contactar",
-feat_1:"Auditoría", feat_2:"Diseño Landing", feat_3:"Informe Mensual", feat_4:"Sistema Web", feat_5:"SEO y Redacción", feat_6:"Llamadas Semanales", feat_7:"Equipo Dedicado", feat_8:"App a Medida", feat_9:"Soporte 24/7",
-toast_booking:"Abriendo Calendario...", toast_linkedin:"Conectando LinkedIn...", toast_select_starter:"Plan Inicial Seleccionado", toast_select_growth:"Plan Crecimiento Seleccionado", toast_contact_sales:"Contactando Ventas..."
-},
-fr: {
-nav_home:"Accueil", nav_about_us:"À Propos", nav_about_me:"À Propos de Moi", nav_pricing:"Tarifs", btn_book:"Réserver",
-hero_tag:"Consultation d'Élite", hero_title:"Faites Grandir Votre Marque.", hero_sub:"Nous construisons des systèmes numériques orientés résultats.",
-btn_view_pricing:"Voir Tarifs", btn_learn_more:"En Savoir Plus", stat_roi:"ROI Moyen", stat_clients:"Marques Monde", stat_revenue:"Revenus", stat_support:"Support",
-process_tag:"Le Processus", process_title:"Pourquoi Les Sites Échouent", process_sub:"Nous construisons des moteurs de conversion.",
-card_1_title:"Ciblage Clair", card_1_desc:"Définissez votre audience.", card_2_title:"Mouvement Intentionnel", card_2_desc:"Les animations guident l'attention.", card_3_title:"Conversion D'Abord", card_3_desc:"Conçu pour convertir.",
-about_us_tag:"Notre Agence", about_us_title:"Excellence Collective", about_us_sub:"Stratèges, designers et ingénieurs.",
-role_strategy:"Dir. Stratégie", role_creative:"Dir. Artistique", role_dev:"Lead Dev",
-founder_tag:"Le Visionnaire", founder_name:"Alex Mercer", founder_desc:"Avec plus de 15 ans d'expérience, j'ai fondé Lumina sur le principe que le design est un outil de croissance.",
-founder_pt1:"Ex Chef Design TechCorp", founder_pt2:"Conférencier WebSummit", founder_pt3:"Auteur 'UI Résultat'",
-pricing_tag:"Investissement", pricing_title:"Choisissez Votre Niveau", pricing_sub:"Tarifs transparents.",
-plan_basic:"Débutant", plan_basic_desc:"Pour les starts-ups.", plan_growth:"Croissance", plan_growth_desc:"Stratégie complète.", plan_enterprise:"Entreprise", plan_ent_desc:"Pour les leaders.", plan_price_custom:"Sur Mesure",
-best_value:"Meilleure Valeur", btn_select:"Sélectionner", btn_contact:"Contacter",
-feat_1:"Audit", feat_2:"Design Landing", feat_3:"Rapport Mensuel", feat_4:"Système Web", feat_5:"SEO", feat_6:"Appels Hebdo", feat_7:"Équipe Déd.", feat_8:"Dev App", feat_9:"Support 24/7",
-toast_booking:"Ouverture Calendrier...", toast_linkedin:"Connexion LinkedIn...", toast_select_starter:"Plan Débutant Sélectionné", toast_select_growth:"Plan Croissance Sélectionné", toast_contact_sales:"Contact Ventes..."
-},
-it: {
-nav_home:"Home", nav_about_us:"Chi Siamo", nav_about_me:"Chi Sono", nav_pricing:"Prezzi", btn_book:"Prenota",
-hero_tag:"Consulenza d'Élite", hero_title:"Cresci Con Precisione.", hero_sub:"Costruiamo sistemi digitali per convertire visitatori.",
-btn_view_pricing:"Vedi Prezzi", btn_learn_more:"Scopri di Più", stat_roi:"ROI Medio", stat_clients:"Marchi Globali", stat_revenue:"Ricavi", stat_support:"Supporto",
-process_tag:"Il Processo", process_title:"Perché I Siti Falliscono", process_sub:"Costruiamo motori di conversione.",
-card_1_title:"Targeting Chiaro", card_1_desc:"Definisci la tua audience.", card_2_title:"Movimento Intenzionale", card_2_desc:"Le animazioni guidano l'attenzione.", card_3_title:"Conversione Prima", card_3_desc:"Progettato per convertire.",
-about_us_tag:"La Nostra Agenzia", about_us_title:"Eccellenza Collettiva", about_us_sub:"Strateghi e designer.",
-role_strategy:"Resp. Strategia", role_creative:"Dir. Creativo", role_dev:"Lead Sviluppatore",
-founder_tag:"Il Visionario", founder_name:"Alex Mercer", founder_desc:"Con 15+ anni di esperienza, ho fondato Lumina sul principio che il design è uno strumento di crescita.",
-founder_pt1:"Ex Design Lead TechCorp", founder_pt2:"Speaker WebSummit 2023", founder_pt3:"Autore 'UI Risultato'",
-pricing_tag:"Investimento", pricing_title:"Scegli Il Tuo Livello", pricing_sub:"Prezzi trasparenti.",
-plan_basic:"Starter", plan_basic_desc:"Per le startup.", plan_growth:"Crescita", plan_growth_desc:"Strategia completa.", plan_enterprise:"Enterprise", plan_ent_desc:"Per i leader.", plan_price_custom:"Personalizzato",
-best_value:"Migliore Valore", btn_select:"Seleziona", btn_contact:"Contatta",
-feat_1:"Audit", feat_2:"Design Landing", feat_3:"Report Mensile", feat_4:"Sistema Web", feat_5:"SEO & Copy", feat_6:"Chiamate Sett.", feat_7:"Team Dedicato", feat_8:"Dev App", feat_9:"Supporto 24/7",
-toast_booking:"Apertura Calendario...", toast_linkedin:"Connessione LinkedIn...", toast_select_starter:"Piano Starter Selezionato", toast_select_growth:"Piano Crescita Selezionato", toast_contact_sales:"Contatto Vendite..."
-},
-pl: {
-nav_home:"Strona Główna", nav_about_us:"O Nas", nav_about_me:"O Mnie", nav_pricing:"Cennik", btn_book:"Umów Rozmowę",
-hero_tag:"Konsulting Premium", hero_title:"Skaluj Z Precyzją.", hero_sub:"Budujemy systemy cyfrowe, które konwertują.",
-btn_view_pricing:"Zobacz Cennik", btn_learn_more:"Więcej", stat_roi:"Średni ROI", stat_clients:"Marki Globalne", stat_revenue:"Przychód", stat_support:"Wsparcie",
-process_tag:"Proces", process_title:"Dlaczego Strony Porażają", process_sub:"Budujemy silniki konwersji.",
-card_1_title:"Jasne Targetowanie", card_1_desc:"Zdefiniuj odbiorców.", card_2_title:"Intencjonalny Ruch", card_2_desc:"Animacje kierują uwagę.", card_3_title:"Konwersja Pierwsza", card_3_desc:"Zaprojektowane dla wyników.",
-about_us_tag:"Nasza Agencja", about_us_title:"Kolektywna Doskonałość", about_us_sub:"Strategowie i inżynierowie.",
-role_strategy:"Szef Strategii", role_creative:"Dir. Kreatywny", role_dev:"Główny Dev",
-founder_tag:"Wizjoner", founder_name:"Alex Mercer", founder_desc:"Z ponad 15-letnim doświadczeniem, założyłem Lumina na zasadzie, że design narzędziem wzrostu.",
-founder_pt1:"Były Design Lead TechCorp", founder_pt2:"Speaker WebSummit", founder_pt3:"Autor 'UI Wyniki'",
-pricing_tag:"Inwestycja", pricing_title:"Wybierz Poziom", pricing_sub:"Przejrzyste ceny.",
-plan_basic:"Starter", plan_basic_desc:"Dla początkujących.", plan_growth:"Wzrost", plan_growth_desc:"Pełna strategia.", plan_enterprise:"Enterprise", plan_ent_desc:"Dla liderów.", plan_price_custom:"Niestandardowy",
-best_value:"Najlepsza Wartość", btn_select:"Wybierz", btn_contact:"Kontakt",
-feat_1:"Audyt", feat_2:"Design Landing", feat_3:"Raport Mies.", feat_4:"System Web", feat_5:"SEO & Copy", feat_6:"Rozm. Tyg.", feat_7:"Zespół Dedic.", feat_8:"Aplikacje", feat_9:"Wsparcie 24/7",
-toast_booking:"Otwieranie Kalendarza...", toast_linkedin:"Łączenie LinkedIn...", toast_select_starter:"Wybrano Starter", toast_select_growth:"Wybrano Wzrost", toast_contact_sales:"Kontakt Sprzedaż..."
-},
-da: {
-nav_home:"Hjem", nav_about_us:"Om Os", nav_about_me:"Om Mig", nav_pricing:"Priser", btn_book:"Book Opkald",
-hero_tag:"Premium Konsulent", hero_title:"Skalér Med Præcision.", hero_sub:"Vi bygger digitale systemer til konvertering.",
-btn_view_pricing:"Se Priser", btn_learn_more:"Mere", stat_roi:"Gns. ROI", stat_clients:"Globale Mærker", stat_revenue:"Omsætning", stat_support:"Support",
-process_tag:"Processen", process_title:"Hvorfor Hjemmesider Fejler", process_sub:"Vi bygger konverteringsmotorer.",
-card_1_title:"Klar Målretning", card_1_desc:"Definer dit publikum.", card_2_title:"Hensigtsmæssig Bevægelse", card_2_desc:"Animationer guider opmærksomheden.", card_3_title:"Konversion Først", card_3_desc:"Designet til resultater.",
-about_us_tag:"Vores Bureau", about_us_title:"Kollektiv Ekspertise", about_us_sub:"Strateger og ingeniører.",
-role_strategy:"Head of Strategy", role_creative:"Creative Director", role_dev:"Lead Developer",
-founder_tag:"Visionæren", founder_name:"Alex Mercer", founder_desc:"Med 15+ års erfaring grundlagde jeg Lumina på princippet om at design er et vækstværktøj.",
-founder_pt1:"Tidligere Design Lead TechCorp", founder_pt2:"Speaker WebSummit", founder_pt3:"Forfatter 'UI Resultater'",
-pricing_tag:"Investering", pricing_title:"Vælg Niveau", pricing_sub:"Gennemsigtige priser.",
-plan_basic:"Starter", plan_basic_desc:"For nye brands.", plan_growth:"Vækst", plan_growth_desc:"Fuld strategi.", plan_enterprise:"Enterprise", plan_ent_desc:"For ledere.", plan_price_custom:"Tilpasset",
-best_value:"Bedste Værdi", btn_select:"Vælg", btn_contact:"Kontakt",
-feat_1:"Brand Revision", feat_2:"Landing Design", feat_3:"Månedlig Rapport", feat_4:"Web System", feat_5:"SEO", feat_6:"Ugentlige Opkald", feat_7:"Dedikeret Team", feat_8:"App Dev", feat_9:"Prioritet 24/7",
-toast_booking:"Åbner Kalender...", toast_linkedin:"Forbinder LinkedIn...", toast_select_starter:"Starter Valgt", toast_select_growth:"Vækst Valgt", toast_contact_sales:"Kontakt Salg..."
-},
-sr: {
-nav_home:"Početna", nav_about_us:"O Nama", nav_about_me:"O Meni", nav_pricing:"Cenovnik", btn_book:"Zakaži Poziv",
-hero_tag:"Premium Konsalting", hero_title:"Skalirajte Sa Preciznošću.", hero_sub:"Gradimo sisteme za konverziju.",
-btn_view_pricing:"Pogledaj Cene", btn_learn_more:"Više", stat_roi:"Prosečan ROI", stat_clients:"Globalni Brendovi", stat_revenue:"Prihod", stat_support:"Podrška",
-process_tag:"Proces", process_title:"Zašto Sajtovi Propadaju", process_sub:"Gradimo motore konverzije.",
-card_1_title:"Jasno Ciljanje", card_1_desc:"Definišite publiku.", card_2_title:"Namenski Pokret", card_2_desc:"Animacije vode pažnju.", card_3_title:"Konverzija Prvo", card_3_desc:"Dizajnirano za rezultate.",
-about_us_tag:"Naša Agencija", about_us_title:"Kolektivna Izvrsnost", about_us_sub:"Strategije i inženjering.",
-role_strategy:"Dir. Strategije", role_creative:"Dir. Kreativni", role_dev:"Glavni Programer",
-founder_tag:"Vizionar", founder_name:"Aleksandar Merkerv", founder_desc:"Sa 15+ godina iskustva, osnovao sam Lumina na principu da je dizajn alat rasta.",
-founder_pt1:"Bivši Design Lead TechCorp", founder_pt2:"Speaker WebSummit", founder_pt3:"Autor 'UI Rezultati'",
-pricing_tag:"Ulaganje", pricing_title:"Izaberite Nivo", pricing_sub:"Transparentne cene.",
-plan_basic:"Početni", plan_basic_desc:"Za nove brendove.", plan_growth:"Rast", plan_growth_desc:"Puna strategija.", plan_enterprise:"Preduzeće", plan_ent_desc:"Za lidere.", plan_price_custom:"Po Meri",
-best_value:"Najbolja Vrednost", btn_select:"Odaberi", btn_contact:"Kontakt",
-feat_1:"Revizija", feat_2:"Landing Dizajn", feat_3:"Mesečni Izveštaj", feat_4:"Web Sistem", feat_5:"SEO", feat_6:"Nedeljni Pozivi", feat_7:"Dedikovan Tim", feat_8:"App Dev", feat_9:"Prioritet 24/7",
-toast_booking:"Otvaranje Kalendara...", toast_linkedin:"Povezivanje LinkedIn...", toast_select_starter:"Početni Izabran", toast_select_growth:"Rast Izabran", toast_contact_sales:"Kontakt Prodaja..."
-},
-hu: {
-nav_home:"Főoldal", nav_about_us:"Rólunk", nav_about_me:"Rólam", nav_pricing:"Árak", btn_book:"Hívás Foglalása",
-hero_tag:"Premium Tanácsadás", hero_title:"Skálázz Pontossággal.", hero_sub:"Digitális rendszerek építése konverzióra.",
-btn_view_pricing:"Árak Megtekintése", btn_learn_more:"Tudj Meg Többet", stat_roi:"Átlagos ROI", stat_clients:"Globális Márkák", stat_revenue:"Bevétel", stat_support:"Támogatás",
-process_tag:"Folyamat", process_title:"Miért Nem Működnek A Weboldalak", process_sub:"Konverziós motorok építése.",
-card_1_title:"Egyértelmű Célzás", card_1_desc:"Határozza meg közönségét.", card_2_title:"Szándékos Mozgás", card_2_desc:"A figyelem irányítása.", card_3_title:"Konverzió Első", card_3_desc:"Eredményekre tervezve.",
-about_us_tag:"Ügynökségünk", about_us_title:"Kollektív Kiválóság", about_us_sub:"Stratégák és mérnökök.",
-role_strategy:"Stratégiai Vezető", role_creative:"Kreatív Igazgató", role_dev:"Vezető Fejlesztő",
-founder_tag:"Vízió", founder_name:"Alex Mercer", founder_desc:"15+ év tapasztalattal a Lumina alapítója: a design a növekedés eszköze.",
-founder_pt1:"Korábbi Design Lead TechCorp", founder_pt2:"Beszélő WebSummit", founder_pt3:"Szerző 'UI Eredmények'",
-pricing_tag:"Befektetés", pricing_title:"Válasszon Szintet", pricing_sub:"Átlátható árak.",
-plan_basic:"Kezdő", plan_basic_desc:"Új márkáknak.", plan_growth:"Növekedés", plan_growth_desc:"Teljes stratégia.", plan_enterprise:"Vállalati", plan_ent_desc:"Vezetőknek.", plan_price_custom:"Egyedi",
-best_value:"Legjobb Érték", btn_select:"Kiválaszt", btn_contact:"Kapcsolat",
-feat_1:"Audit", feat_2:"Landing Tervezés", feat_3:"Havi Jelentés", feat_4:"Web Rendszer", feat_5:"SEO", feat_6:"Heti Hívások", feat_7:"Dedikált Csapat", feat_8:"App Fejlesztés", feat_9:"24/7 Prioritás",
-toast_booking:"Naptár Megnyitása...", toast_linkedin:"Kapcsolódás LinkedIn...", toast_select_starter:"Kezdő Terv Kiválasztva", toast_select_growth:"Növekedési Terv Kiválasztva", toast_contact_sales:"Kapcsolat Értékesítés..."
-}
-};
+                    <!-- Standard -->
+                    <div class="pricing-card glass-light rounded-3xl p-8 flex flex-col">
+                        <div class="mb-6">
+                            <div class="text-sm text-slate-400 mb-2" data-i18n="plan2_name">Standard</div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-5xl font-bold">€150</span>
+                            </div>
+                            <div class="text-sm text-slate-500 mt-1" data-i18n="plan2_period">one-time payment</div>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-6" data-i18n="plan2_desc">For websites that need a database and dynamic content.</p>
+                        <ul class="space-y-3 mb-8 flex-grow">
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_multi">Multi-page website</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_responsive">Responsive design</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_database">Database integration</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_dynamic">Dynamic content</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_admin">Admin panel</span></li>
+                            <li class="flex items-center gap-3 text-sm text-slate-600"><span>✗</span> <span data-i18n="feat_advanced">Advanced features</span></li>
+                        </ul>
+                        <button onclick="navigateTo('contact')" class="w-full glass py-3 rounded-xl font-semibold hover:bg-white/10 transition cursor-pointer" data-i18n="plan_choose">Choose Plan</button>
+                    </div>
 
-/* --- LOGIC --- */
-let lang = 'en';
+                    <!-- Professional -->
+                    <div class="pricing-card featured rounded-3xl p-8 flex flex-col relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-xs font-bold" data-i18n="popular">MOST POPULAR</div>
+                        <div class="mb-6">
+                            <div class="text-sm text-slate-400 mb-2" data-i18n="plan3_name">Professional</div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-5xl font-bold">€300</span>
+                            </div>
+                            <div class="text-sm text-slate-500 mt-1" data-i18n="plan3_period">one-time payment</div>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-6" data-i18n="plan3_desc">For serious projects with images, media, and advanced features.</p>
+                        <ul class="space-y-3 mb-8 flex-grow">
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_everything">Everything in Standard</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_images">Image gallery & uploads</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_advanced">Advanced animations</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_seo">SEO optimization</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_support">Priority support</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_revisions">3 revisions included</span></li>
+                        </ul>
+                        <button onclick="navigateTo('contact')" class="w-full btn-primary py-3 rounded-xl font-semibold cursor-pointer" data-i18n="plan_choose">Choose Plan</button>
+                    </div>
 
-function t(key) { return translations[lang][key] || translations['en'][key] || ''; }
+                    <!-- Enterprise -->
+                    <div class="pricing-card glass-light rounded-3xl p-8 flex flex-col">
+                        <div class="mb-6">
+                            <div class="text-sm text-slate-400 mb-2" data-i18n="plan4_name">Enterprise</div>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-4xl font-bold">€500+</span>
+                            </div>
+                            <div class="text-sm text-slate-500 mt-1" data-i18n="plan4_period">custom quote</div>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-6" data-i18n="plan4_desc">Fully custom projects tailored to your exact specifications.</p>
+                        <ul class="space-y-3 mb-8 flex-grow">
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_everything_pro">Everything in Professional</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_fullstack">Full-stack development</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_custom_logic">Custom business logic</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_api">API integration</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_unlimited">Unlimited revisions</span></li>
+                            <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_maintenance">Ongoing maintenance</span></li>
+                        </ul>
+                        <button onclick="navigateTo('contact')" class="w-full glass py-3 rounded-xl font-semibold hover:bg-white/10 transition cursor-pointer" data-i18n="plan_contact">Contact Us</button>
+                    </div>
+                </div>
 
-function toggleLangMenu() {
-document.getElementById('langWrapper').classList.toggle('open');
-}
+                <!-- FAQ -->
+                <div class="mt-20 max-w-3xl mx-auto">
+                    <h2 class="text-3xl font-bold text-center mb-10" data-i18n="faq_title">Frequently Asked Questions</h2>
+                    <div class="space-y-4">
+                        <div class="glass-light rounded-2xl p-6">
+                            <h4 class="font-semibold mb-2" data-i18n="faq1_q">How long does it take to build a website?</h4>
+                            <p class="text-sm text-slate-400" data-i18n="faq1_a">Most projects are completed within 1-3 weeks, depending on complexity. Simple sites can be done in just a few days.</p>
+                        </div>
+                        <div class="glass-light rounded-2xl p-6">
+                            <h4 class="font-semibold mb-2" data-i18n="faq2_q">Do you offer revisions?</h4>
+                            <p class="text-sm text-slate-400" data-i18n="faq2_a">Yes! All plans include revisions. Professional plans include 3 revisions, and Enterprise includes unlimited revisions.</p>
+                        </div>
+                        <div class="glass-light rounded-2xl p-6">
+                            <h4 class="font-semibold mb-2" data-i18n="faq3_q">What payment methods do you accept?</h4>
+                            <p class="text-sm text-slate-400" data-i18n="faq3_a">We accept bank transfers, PayPal, and other common payment methods. Contact us to discuss the best option for you.</p>
+                        </div>
+                        <div class="glass-light rounded-2xl p-6">
+                            <h4 class="font-semibold mb-2" data-i18n="faq4_q">Can I request a custom feature not listed?</h4>
+                            <p class="text-sm text-slate-400" data-i18n="faq4_a">Absolutely! Our Enterprise plan is designed for custom requirements. Just reach out and we'll create a tailored solution for you.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
-function setLanguage(l) {
-lang = l;
-document.getElementById('currLang').innerText = l.toUpperCase();
-updateContent();
-document.getElementById('langWrapper').classList.remove('open');
-}
+    <!-- CONTACT PAGE -->
+    <div id="page-contact" class="page">
+        <section class="pt-32 pb-20 relative">
+            <div class="absolute inset-0 hero-bg opacity-10"></div>
+            <div class="max-w-6xl mx-auto px-6 relative z-10">
+                <div class="text-center mb-16">
+                    <div class="inline-block mb-4 px-4 py-2 glass-light rounded-full text-sm text-blue-400" data-i18n="contact_badge">✦ Get In Touch</div>
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6" data-i18n="contact_title">Let's Build Something <span class="gradient-text">Amazing</span></h1>
+                    <p class="text-lg text-slate-400 max-w-2xl mx-auto" data-i18n="contact_subtitle">Ready to start your project? Fill out the form below or reach out directly.</p>
+                </div>
 
-function updateContent() {
-document.querySelectorAll('[data-i18n]').forEach(el => {
-const key = el.getAttribute('data-i18n');
-const txt = t(key);
-if (txt) {
-if (el.querySelector('i') && el.tagName !== 'P' && el.tagName !== 'SPAN') {
-const icon = el.querySelector('i').outerHTML;
-el.innerHTML = icon + " " + txt;
-} else {
-el.innerText = txt;
-}
-}
-});
-}
+                <div class="grid md:grid-cols-2 gap-12">
+                    <!-- Contact Info -->
+                    <div>
+                        <div class="glass-light rounded-3xl p-8 mb-6">
+                            <h3 class="text-xl font-bold mb-6" data-i18n="contact_info_title">Contact Information</h3>
+                            <div class="space-y-4">
+                                <a href="mailto:gzolcsi2010@gmail.com" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition group">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center text-xl group-hover:scale-110 transition"></div>
+                                    <div>
+                                        <div class="text-sm text-slate-400" data-i18n="contact_email_label">Email</div>
+                                        <div class="font-medium">gzolcsi2010@gmail.com</div>
+                                    </div>
+                                </a>
+                                <div class="flex items-center gap-4 p-4 rounded-2xl">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center text-xl">⏰</div>
+                                    <div>
+                                        <div class="text-sm text-slate-400" data-i18n="contact_response_label">Response Time</div>
+                                        <div class="font-medium" data-i18n="contact_response_value">Within 24 hours</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4 p-4 rounded-2xl">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 flex items-center justify-center text-xl">🌍</div>
+                                    <div>
+                                        <div class="text-sm text-slate-400" data-i18n="contact_location_label">Location</div>
+                                        <div class="font-medium" data-i18n="contact_location_value">Remote — Worldwide</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-/* --- ROUTER (SPA) --- */
-function router(pageId) {
-document.querySelectorAll('.page-section').forEach(el => {
-el.classList.remove('active');
-});
-document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                        <div class="glass-light rounded-3xl p-8">
+                            <h3 class="text-xl font-bold mb-4" data-i18n="contact_why_title">Why Work With Us?</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-green-400">✓</span>
+                                    <span class="text-sm" data-i18n="contact_why1">Professional quality at affordable prices</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-green-400">✓</span>
+                                    <span class="text-sm" data-i18n="contact_why2">Fast turnaround times</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-green-400">✓</span>
+                                    <span class="text-sm" data-i18n="contact_why3">Multilingual support (EN, SR, HU)</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-green-400">✓</span>
+                                    <span class="text-sm" data-i18n="contact_why4">Ongoing support after launch</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-green-400">✓</span>
+                                    <span class="text-sm" data-i18n="contact_why5">Proven track record with real projects</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-const target = document.getElementById(pageId);
-if (target) {
-target.classList.add('active');
-window.scrollTo({ top: 0, behavior: 'smooth' });
+                    <!-- Contact Form -->
+                    <div class="glass-light rounded-3xl p-8">
+                        <h3 class="text-xl font-bold mb-6" data-i18n="contact_form_title">Send Us a Message</h3>
+                        <form id="contactForm" onsubmit="handleContactSubmit(event)" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium mb-2" data-i18n="form_name">Your Name</label>
+                                <input type="text" id="formName" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 transition" placeholder="John Doe">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2" data-i18n="form_email">Your Email</label>
+                                <input type="email" id="formEmail" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 transition" placeholder="john@example.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2" data-i18n="form_plan">Interested Plan</label>
+                                <select id="formPlan" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition">
+                                    <option value="starter" data-i18n="plan1_name">Starter — €50</option>
+                                    <option value="standard" data-i18n="plan2_name">Standard — €150</option>
+                                    <option value="professional" data-i18n="plan3_name">Professional — €300</option>
+                                    <option value="enterprise" data-i18n="plan4_name">Enterprise — €500+</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2" data-i18n="form_message">Project Details</label>
+                                <textarea id="formMessage" rows="5" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 transition resize-none" placeholder="Tell us about your project..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full btn-primary py-4 rounded-xl font-semibold cursor-pointer" data-i18n="form_submit">Send Message</button>
+                        </form>
+                        <div id="formSuccess" class="hidden mt-4 p-4 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400 text-center text-sm">
+                            <span data-i18n="form_success">✓ Message sent successfully! We'll get back to you soon.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 
-const nav = document.querySelector(`.nav-link[onclick="router('${pageId}')"]`);
-if(nav) nav.classList.add('active');
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-12 relative">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm">MW</div>
+                        <span class="text-lg font-bold">MW Studio</span>
+                    </div>
+                    <p class="text-sm text-slate-400" data-i18n="footer_desc">Professional web development studio building modern digital experiences.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-i18n="footer_nav">Navigation</h4>
+                    <div class="space-y-2 text-sm text-slate-400">
+                        <div><button onclick="navigateTo('home')" class="hover:text-white transition cursor-pointer" data-i18n="nav_home">Home</button></div>
+                        <div><button onclick="navigateTo('about')" class="hover:text-white transition cursor-pointer" data-i18n="nav_about">About</button></div>
+                        <div><button onclick="navigateTo('projects')" class="hover:text-white transition cursor-pointer" data-i18n="nav_projects">Projects</button></div>
+                        <div><button onclick="navigateTo('pricing')" class="hover:text-white transition cursor-pointer" data-i18n="nav_pricing">Pricing</button></div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-i18n="footer_services">Services</h4>
+                    <div class="space-y-2 text-sm text-slate-400">
+                        <div data-i18n="service1_title">Custom Design</div>
+                        <div data-i18n="service2_title">Fast Performance</div>
+                        <div data-i18n="service3_title">Responsive</div>
+                        <div data-i18n="plan4_name">Enterprise</div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4" data-i18n="footer_contact">Contact</h4>
+                    <div class="space-y-2 text-sm text-slate-400">
+                        <div>gzolcsi2010@gmail.com</div>
+                        <div data-i18n="contact_response_value">Within 24 hours</div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-sm text-slate-500">© 2026 MW Studio. All rights reserved.</div>
+                <div class="text-sm text-slate-500" data-i18n="footer_made">Made with passion for the web</div>
+            </div>
+        </div>
+    </footer>
 
-observeReveals();
-}
-}
+    <script>
+        // Translations
+        const translations = {
+            en: {
+                nav_home: "Home", nav_about: "About", nav_projects: "Projects", nav_pricing: "Pricing", nav_contact: "Contact", nav_cta: "Get Started",
+                hero_badge: "✦ Professional Web Development", hero_title1: "We Build", hero_title2: "Digital Experiences",
+                hero_desc: "Modern, fast, and beautiful websites crafted with precision. From simple landing pages to complex systems — we bring your vision to life.",
+                hero_cta1: "View Our Work", hero_cta2: "See Pricing",
+                stat_projects: "Projects Delivered", stat_satisfaction: "Client Satisfaction", stat_languages: "Languages Supported", stat_support: "Support Available",
+                services_title: "What We Offer", services_subtitle: "From concept to launch, we handle everything",
+                service1_title: "Custom Design", service1_desc: "Unique, modern designs tailored to your brand identity and business goals.",
+                service2_title: "Fast Performance", service2_desc: "Optimized code and lightweight architecture for blazing fast load times.",
+                service3_title: "Responsive", service3_desc: "Perfect experience on every device — desktop, tablet, and mobile.",
+                about_badge: "✦ About Us", about_title: "The Story Behind ", about_intro: "We are passionate developers dedicated to building exceptional digital experiences for clients around the world.",
+                about_who_title: "Who We Are", about_who_p1: "MW Studio is a web development studio focused on creating modern, professional websites and web applications. We combine clean code with stunning design to deliver results that exceed expectations.",
+                about_who_p2: "Whether you need a simple landing page, a complex database-driven system, or a full custom solution — we have the skills and experience to make it happen.",
+                about_values_title: "Our Values", value1_title: "Quality First", value1_desc: "Every project is built with attention to detail and best practices.",
+                value2_title: "Client Focused", value2_desc: "Your vision and satisfaction are our top priorities.",
+                value3_title: "Modern Tech", value3_desc: "We use the latest tools and technologies for optimal results.",
+                value4_title: "Affordable", value4_desc: "Professional quality at prices that work for everyone.",
+                process_title: "How We Work", process_subtitle: "A simple, transparent process from start to finish",
+                step1_title: "Consultation", step1_desc: "We discuss your needs and goals", step2_title: "Design", step2_desc: "We create a mockup for your approval",
+                step3_title: "Development", step3_desc: "We build your website with care", step4_title: "Launch", step4_desc: "Your site goes live, ready for the world",
+                projects_badge: "✦ Our Portfolio", projects_title: "Featured ", projects_subtitle: "Real websites we've built — explore our work below",
+                project1_desc: "A stylish and modern website with elegant design and smooth user experience.",
+                project2_desc: "A multilingual website supporting multiple languages with a clean, accessible interface.",
+                project3_desc: "Our most ambitious project — a complete online competition platform with user accounts, real-time features, and a full backend system. This showcases our ability to build complex, production-ready applications.",
+                project3_tag: "Full System", featured: "FEATURED", project_view: "View Project",
+                projects_cta_title: "Want a project like these?", projects_cta_desc: "Let's work together to bring your idea to life. Get in touch and we'll discuss your project.",
+                projects_cta_btn: "Start a Project",
+                pricing_badge: "✦ Pricing", pricing_title: "Simple, Transparent ", pricing_subtitle: "Choose the plan that fits your needs. No hidden fees, no surprises.",
+                plan1_name: "Starter", plan1_period: "one-time payment", plan1_desc: "Perfect for simple landing pages and personal websites.",
+                feat_single: "Single page website", feat_responsive: "Responsive design", feat_basic: "Basic styling", feat_contact: "Contact form",
+                feat_database: "Database", feat_custom: "Custom features",
+                plan2_name: "Standard", plan2_period: "one-time payment", plan2_desc: "For websites that need a database and dynamic content.",
+                feat_multi: "Multi-page website", feat_dynamic: "Dynamic content", feat_admin: "Admin panel", feat_advanced: "Advanced features",
+                popular: "MOST POPULAR", plan3_name: "Professional", plan3_period: "one-time payment", plan3_desc: "For serious projects with images, media, and advanced features.",
+                feat_everything: "Everything in Standard", feat_images: "Image gallery & uploads", feat_seo: "SEO optimization", feat_support: "Priority support", feat_revisions: "3 revisions included",
+                plan4_name: "Enterprise", plan4_period: "custom quote", plan4_desc: "Fully custom projects tailored to your exact specifications.",
+                feat_everything_pro: "Everything in Professional", feat_fullstack: "Full-stack development", feat_custom_logic: "Custom business logic", feat_api: "API integration", feat_unlimited: "Unlimited revisions", feat_maintenance: "Ongoing maintenance",
+                plan_choose: "Choose Plan", plan_contact: "Contact Us",
+                faq_title: "Frequently Asked Questions",
+                faq1_q: "How long does it take to build a website?", faq1_a: "Most projects are completed within 1-3 weeks, depending on complexity. Simple sites can be done in just a few days.",
+                faq2_q: "Do you offer revisions?", faq2_a: "Yes! All plans include revisions. Professional plans include 3 revisions, and Enterprise includes unlimited revisions.",
+                faq3_q: "What payment methods do you accept?", faq3_a: "We accept bank transfers, PayPal, and other common payment methods. Contact us to discuss the best option for you.",
+                faq4_q: "Can I request a custom feature not listed?", faq4_a: "Absolutely! Our Enterprise plan is designed for custom requirements. Just reach out and we'll create a tailored solution for you.",
+                contact_badge: "✦ Get In Touch", contact_title: "Let's Build Something ", contact_subtitle: "Ready to start your project? Fill out the form below or reach out directly.",
+                contact_info_title: "Contact Information", contact_email_label: "Email", contact_response_label: "Response Time", contact_response_value: "Within 24 hours",
+                contact_location_label: "Location", contact_location_value: "Remote — Worldwide",
+                contact_why_title: "Why Work With Us?", contact_why1: "Professional quality at affordable prices", contact_why2: "Fast turnaround times",
+                contact_why3: "Multilingual support (EN, SR, HU)", contact_why4: "Ongoing support after launch", contact_why5: "Proven track record with real projects",
+                contact_form_title: "Send Us a Message", form_name: "Your Name", form_email: "Your Email", form_plan: "Interested Plan",
+                form_message: "Project Details", form_submit: "Send Message", form_success: "✓ Message sent successfully! We'll get back to you soon.",
+                footer_desc: "Professional web development studio building modern digital experiences.",
+                footer_nav: "Navigation", footer_services: "Services", footer_contact: "Contact", footer_made: "Made with passion for the web"
+            },
+            sr: {
+                nav_home: "Početna", nav_about: "O nama", nav_projects: "Projekti", nav_pricing: "Cenovnik", nav_contact: "Kontakt", nav_cta: "Započni",
+                hero_badge: "✦ Profesionalni Web Development", hero_title1: "Gradimo", hero_title2: "Digitalna Iskustva",
+                hero_desc: "Moderni, brzi i lepi sajtovi izrađeni sa preciznošću. Od jednostavnih landing stranica do kompleksnih sistema — ostvarujemo vašu viziju.",
+                hero_cta1: "Pogledaj Radove", hero_cta2: "Pogledaj Cene",
+                stat_projects: "Završenih Projekata", stat_satisfaction: "Zadovoljstvo Klijenata", stat_languages: "Podržanih Jezika", stat_support: "Dostupna Podrška",
+                services_title: "Šta Nudimo", services_subtitle: "Od ideje do lansiranja, mi se bavimo svime",
+                service1_title: "Custom Dizajn", service1_desc: "Jedinstveni, moderni dizajni prilagođeni vašem brendu i poslovnim ciljevima.",
+                service2_title: "Brze Performanse", service2_desc: "Optimizovan kod i lagana arhitektura za munjevito brzo učitavanje.",
+                service3_title: "Responzivno", service3_desc: "Savršeno iskustvo na svakom uređaju — desktop, tablet i mobilni.",
+                about_badge: "✦ O Nama", about_title: "Priča Iza ", about_intro: "Mi smo strastveni programeri posvećeni izgradnji izuzetnih digitalnih iskustava za klijente širom sveta.",
+                about_who_title: "Ko Smo Mi", about_who_p1: "MW Studio je studio za web development fokusiran na kreiranje modernih, profesionalnih sajtova i web aplikacija. Kombinujemo čist kod sa prelepim dizajnom da bismo isporučili rezultate koji nadmašuju očekivanja.",
+                about_who_p2: "Bilo da vam treba jednostavna landing stranica, kompleksan sistem sa bazom podataka ili potpuno custom rešenje — imamo veštine i iskustvo da to ostvarimo.",
+                about_values_title: "Naše Vrednosti", value1_title: "Kvalitet na Prvom Mestu", value1_desc: "Svaki projekat je izgrađen sa pažnjom na detalje i najboljim praksama.",
+                value2_title: "Fokus na Klijenta", value2_desc: "Vaša vizija i zadovoljstvo su naši glavni prioriteti.",
+                value3_title: "Moderne Tehnologije", value3_desc: "Koristimo najnovije alate i tehnologije za optimalne rezultate.",
+                value4_title: "Pristupačno", value4_desc: "Profesionalni kvalitet po cenama koje odgovaraju svima.",
+                process_title: "Kako Radimo", process_subtitle: "Jednostavan, transparentan proces od početka do kraja",
+                step1_title: "Konsultacija", step1_desc: "Razgovaramo o vašim potrebama i ciljevima", step2_title: "Dizajn", step2_desc: "Kreiramo maketu za vašu potvrdu",
+                step3_title: "Razvoj", step3_desc: "Pažljivo gradimo vaš sajt", step4_title: "Lansiranje", step4_desc: "Vaš sajt ide uživo, spreman za svet",
+                projects_badge: "✦ Naš Portfolio", projects_title: "Istaknuti ", projects_subtitle: "Pravi sajtovi koje smo izgradili — istražite naše radove",
+                project1_desc: "Stilski i moderan sajt sa elegantnim dizajnom i glatkim korisničkim iskustvom.",
+                project2_desc: "Višejezični sajt koji podržava više jezika sa čistim, pristupačnim interfejsom.",
+                project3_desc: "Naš najambiciozniji projekat — kompletna platforma za online takmičenja sa korisničkim nalozima, real-time funkcijama i punim backend sistemom. Ovo pokazuje našu sposobnost da gradimo kompleksne, produkcijski spremne aplikacije.",
+                project3_tag: "Kompletan Sistem", featured: "ISTAKNUTO", project_view: "Pogledaj Projekat",
+                projects_cta_title: "Želite projekat poput ovih?", projects_cta_desc: "Hajde da zajedno ostvarimo vašu ideju. Javite nam se i razgovaraćemo o vašem projektu.",
+                projects_cta_btn: "Započni Projekat",
+                pricing_badge: "✦ Cenovnik", pricing_title: "Jednostavne, Transparentne ", pricing_subtitle: "Izaberite plan koji odgovara vašim potrebama. Bez skrivenih troškova, bez iznenađenja.",
+                plan1_name: "Starter", plan1_period: "jednokratno plaćanje", plan1_desc: "Savršeno za jednostavne landing stranice i lične sajtove.",
+                feat_single: "Jednostranični sajt", feat_responsive: "Responzivan dizajn", feat_basic: "Osnovno stilizovanje", feat_contact: "Kontakt forma",
+                feat_database: "Baza podataka", feat_custom: "Custom funkcije",
+                plan2_name: "Standard", plan2_period: "jednokratno plaćanje", plan2_desc: "Za sajtove kojima je potrebna baza podataka i dinamički sadržaj.",
+                feat_multi: "Višestranični sajt", feat_dynamic: "Dinamički sadržaj", feat_admin: "Admin panel", feat_advanced: "Napredne funkcije",
+                popular: "NAJPOPULARNIJE", plan3_name: "Profesionalni", plan3_period: "jednokratno plaćanje", plan3_desc: "Za ozbiljne projekte sa slikama, medijima i naprednim funkcijama.",
+                feat_everything: "Sve iz Standard plana", feat_images: "Galerija slika i upload", feat_seo: "SEO optimizacija", feat_support: "Prioritetna podrška", feat_revisions: "3 revizije uključene",
+                plan4_name: "Enterprise", plan4_period: "custom ponuda", plan4_desc: "Potpuno custom projekti prilagođeni vašim tačnim specifikacijama.",
+                feat_everything_pro: "Sve iz Profesionalnog plana", feat_fullstack: "Full-stack razvoj", feat_custom_logic: "Custom poslovna logika", feat_api: "API integracija", feat_unlimited: "Neograničene revizije", feat_maintenance: "Održavanje",
+                plan_choose: "Izaberi Plan", plan_contact: "Kontaktirajte Nas",
+                faq_title: "Česta Pitanja",
+                faq1_q: "Koliko vremena treba za izradu sajta?", faq1_a: "Većina projekata je završena za 1-3 nedelje, u zavisnosti od složenosti. Jednostavni sajtovi mogu biti gotovi za nekoliko dana.",
+                faq2_q: "Da li nudite revizije?", faq2_a: "Da! Svi planovi uključuju revizije. Profesionalni planovi uključuju 3 revizije, a Enterprise neograničene revizije.",
+                faq3_q: "Koje metode plaćanja prihvatate?", faq3_a: "Prihvatamo bankovne transfere, PayPal i druge uobičajene metode plaćanja. Kontaktirajte nas da razgovaramo o najboljoj opciji za vas.",
+                faq4_q: "Mogu li tražiti custom funkciju koja nije navedena?", faq4_a: "Apsolutno! Naš Enterprise plan je dizajniran za custom zahteve. Samo nas kontaktirajte i kreiraćemo rešenje za vas.",
+                contact_badge: " Kontaktirajte Nas", contact_title: "Hajde Da Izgradimo Nešto ", contact_subtitle: "Spremni da započnete projekat? Popunite formu ispod ili nas kontaktirajte direktno.",
+                contact_info_title: "Kontakt Informacije", contact_email_label: "Email", contact_response_label: "Vreme Odgovora", contact_response_value: "U roku od 24 sata",
+                contact_location_label: "Lokacija", contact_location_value: "Remote — Širom Sveta",
+                contact_why_title: "Zašto Raditi Sa Nama?", contact_why1: "Profesionalni kvalitet po pristupačnim cenama", contact_why2: "Brzo vreme izrade",
+                contact_why3: "Višejezična podrška (EN, SR, HU)", contact_why4: "Podrška nakon lansiranja", contact_why5: "Dokazani rezultati sa pravim projektima",
+                contact_form_title: "Pošaljite Nam Poruku", form_name: "Vaše Ime", form_email: "Vaš Email", form_plan: "Zainteresovani Plan",
+                form_message: "Detalji Projekta", form_submit: "Pošalji Poruku", form_success: "✓ Poruka uspešno poslata! Javićemo vam se uskoro.",
+                footer_desc: "Profesionalni studio za web development koji gradi moderna digitalna iskustva.",
+                footer_nav: "Navigacija", footer_services: "Usluge", footer_contact: "Kontakt", footer_made: "Napravljeno sa strašću za web"
+            },
+            hu: {
+                nav_home: "Főoldal", nav_about: "Rólunk", nav_projects: "Projektek", nav_pricing: "Árazás", nav_contact: "Kapcsolat", nav_cta: "Kezdjük",
+                hero_badge: " Professzionális Webfejlesztés", hero_title1: "Építünk", hero_title2: "Digitális Élményeket",
+                hero_desc: "Modern, gyors és gyönyörű weboldalak precízen megtervezve. Az egyszerű landing page-ektől a komplex rendszerekig — megvalósítjuk az elképzeléseidet.",
+                hero_cta1: "Munkáink", hero_cta2: "Árak",
+                stat_projects: "Elkészült Projekt", stat_satisfaction: "Ügyfél Elégedettség", stat_languages: "Támogatott Nyelv", stat_support: "Elérhető Támogatás",
+                services_title: "Amit Kínálunk", services_subtitle: "Az ötlettől a launch-ig mindent mi intézünk",
+                service1_title: "Egyedi Design", service1_desc: "Egyedi, modern dizájnok, amelyek a márkádhoz és üzleti céljaidhoz igazodnak.",
+                service2_title: "Gyors Teljesítmény", service2_desc: "Optimalizált kód és könnyű architektúra a villámgyors betöltésért.",
+                service3_title: "Reszponzív", service3_desc: "Tökéletes élmény minden eszközön — asztali, tablet és mobil.",
+                about_badge: "✦ Rólunk", about_title: "A Történet a ", about_intro: "Szenvedélyes fejlesztők vagyunk, akik kivételes digitális élményeket építenek ügyfelek számára szerte a világon.",
+                about_who_title: "Kik Vagyunk", about_who_p1: "Az MW Studio egy webfejlesztő stúdió, amely modern, professzionális weboldalak és webalkalmazások készítésére specializálódott. Tiszta kódot kombinálunk lenyűgöző dizájnnal, hogy az elvárásokat meghaladó eredményeket szállítsunk.",
+                about_who_p2: "Akár egy egyszerű landing page-re, egy komplex adatbázis-alapú rendszerre vagy egy teljesen egyedi megoldásra van szükséged — megvannak a készségeink és tapasztalatunk hozzá.",
+                about_values_title: "Értékeink", value1_title: "Minőség Először", value1_desc: "Minden projektet részletekre való odafigyeléssel és legjobb gyakorlatokkal építünk.",
+                value2_title: "Ügyfélközpontú", value2_desc: "Az elképzelésed és elégedettséged a legfontosabb prioritásunk.",
+                value3_title: "Modern Technológia", value3_desc: "A legújabb eszközöket és technológiákat használjuk az optimális eredményekért.",
+                value4_title: "Megfizethető", value4_desc: "Professzionális minőség olyan árakon, amelyek mindenkinek megfelelnek.",
+                process_title: "Hogyan Dolgozunk", process_subtitle: "Egyszerű, átlátható folyamat az elejétől a végéig",
+                step1_title: "Konzultáció", step1_desc: "Megbeszéljük az igényeidet és céljaidat", step2_title: "Tervezés", step2_desc: "Mockup-ot készítünk jóváhagyásra",
+                step3_title: "Fejlesztés", step3_desc: "Gondosan felépítjük a weboldaladat", step4_title: "Launch", step4_desc: "Az oldalad élesedik, készen áll a világra",
+                projects_badge: "✦ Portfóliónk", projects_title: "Kiemelt ", projects_subtitle: "Valódi weboldalak, amelyeket készítettünk — fedezd fel munkáinkat",
+                project1_desc: "Stílusos és modern weboldal elegáns dizájnnal és sima felhasználói élménnyel.",
+                project2_desc: "Többnyelvű weboldal, amely több nyelvet támogat tiszta, hozzáférhető felülettel.",
+                project3_desc: "Legambiciózusabb projektünk — egy teljes online versenyplatform felhasználói fiókokkal, valós idejű funkciókkal és teljes backend rendszerrel. Ez bemutatja képességünket komplex, élesítésre kész alkalmazások építésére.",
+                project3_tag: "Teljes Rendszer", featured: "KIEMELT", project_view: "Projekt Megtekintése",
+                projects_cta_title: "Szeretnél egy ilyen projektet?", projects_cta_desc: "Dolgozzunk együtt, hogy megvalósítsuk az ötletedet. Lépj velünk kapcsolatba és megbeszéljük a projektedet.",
+                projects_cta_btn: "Projekt Indítása",
+                pricing_badge: "✦ Árazás", pricing_title: "Egyszerű, Átlátható ", pricing_subtitle: "Válaszd ki az igényeidnek megfelelő csomagot. Nincsenek rejtett költségek, nincsenek meglepetések.",
+                plan1_name: "Starter", plan1_period: "egyszeri fizetés", plan1_desc: "Tökéletes egyszerű landing page-ekhez és személyes weboldalakhoz.",
+                feat_single: "Egyoldalas weboldal", feat_responsive: "Reszponzív dizájn", feat_basic: "Alap stílus", feat_contact: "Kapcsolat rlap",
+                feat_database: "Adatbázis", feat_custom: "Egyedi funkciók",
+                plan2_name: "Standard", plan2_period: "egyszeri fizetés", plan2_desc: "Olyan weboldalakhoz, amelyeknek adatbázisra és dinamikus tartalomra van szükségük.",
+                feat_multi: "Többoldalas weboldal", feat_dynamic: "Dinamikus tartalom", feat_admin: "Admin panel", feat_advanced: "Haladó funkciók",
+                popular: "LEGNÉPSZERŰBB", plan3_name: "Professzionális", plan3_period: "egyszeri fizetés", plan3_desc: "Komoly projektekhez képekkel, médiával és haladó funkciókkal.",
+                feat_everything: "Minden a Standard csomagból", feat_images: "Képgaléria és feltöltés", feat_seo: "SEO optimalizálás", feat_support: "Prioritásos támogatás", feat_revisions: "3 revízió benne van",
+                plan4_name: "Enterprise", plan4_period: "egyedi ajánlat", plan4_desc: "Teljesen egyedi projektek, pontos specifikációidhoz igazítva.",
+                feat_everything_pro: "Minden a Professzionális csomagból", feat_fullstack: "Full-stack fejlesztés", feat_custom_logic: "Egyedi üzleti logika", feat_api: "API integráció", feat_unlimited: "Korlátlan revízió", feat_maintenance: "Folyamatos karbantartás",
+                plan_choose: "Csomag Választása", plan_contact: "Lépj Kapcsolatba",
+                faq_title: "Gyakran Ismételt Kérdések",
+                faq1_q: "Mennyi időbe telik egy weboldal elkészítése?", faq1_a: "A legtöbb projekt 1-3 héten belül elkészül, a komplexitástól függően. Az egyszerű oldalak néhány nap alatt is készen lehetnek.",
+                faq2_q: "Kínáltok revíziókat?", faq2_a: "Igen! Minden csomag tartalmaz revíziókat. A Professzionális csomagok 3 revíziót, az Enterprise pedig korlátlan revíziót tartalmaz.",
+                faq3_q: "Milyen fizetési módokat fogadtok el?", faq3_a: "Banki átutalást, PayPal-t és más gyakori fizetési módokat fogadunk el. Lépj velünk kapcsolatba, hogy megbeszéljük a legjobb opciót.",
+                faq4_q: "Kérhetek egyedi funkciót, ami nincs felsorolva?", faq4_a: "Abszolút! Az Enterprise csomagunk egyedi igényekre lett tervezve. Csak lépj velünk kapcsolatba és létrehozunk egy személyre szabott megoldást.",
+                contact_badge: "✦ Lépj Kapcsolatba", contact_title: "Építsünk Valami ", contact_subtitle: "Készen állsz a projekted elindítására? Töltsd ki az alábbi űrlapot vagy lépj velünk közvetlenül kapcsolatba.",
+                contact_info_title: "Elérhetőségek", contact_email_label: "Email", contact_response_label: "Válaszidő", contact_response_value: "24 órán belül",
+                contact_location_label: "Helyszín", contact_location_value: "Remote — Világszerte",
+                contact_why_title: "Miért Vele Dolgozz?", contact_why1: "Professzionális minőség megfizethető árakon", contact_why2: "Gyors átfutási idő",
+                contact_why3: "Többnyelvű támogatás (EN, SR, HU)", contact_why4: "Folyamatos támogatás launch után", contact_why5: "Bizonyított eredmények valódi projektekkel",
+                contact_form_title: "Küldj Üzenetet", form_name: "Neved", form_email: "Emailed", form_plan: "Kiválasztott Csomag",
+                form_message: "Projekt Részletei", form_submit: "Üzenet Küldése", form_success: "✓ Üzenet sikeresen elküldve! Hamarosan jelentkezünk.",
+                footer_desc: "Professzionális webfejlesztő stúdió, amely modern digitális élményeket épít.",
+                footer_nav: "Navigáció", footer_services: "Szolgáltatások", footer_contact: "Kapcsolat", footer_made: "Szenvedéllyel készítve a webért"
+            }
+        };
 
-/* --- TOAST --- */
-function showToast(msg) {
-const t = document.getElementById('toast');
-document.getElementById('toastMsg').innerText = msg;
-t.classList.add('active');
-setTimeout(() => t.classList.remove('active'), 3000);
-}
+        let currentLang = 'en';
 
-/* --- REVEAL ANIMATION --- */
-function observeReveals() {
-const obs = new IntersectionObserver((entries) => {
-entries.forEach(entry => {
-if (entry.isIntersecting) entry.target.classList.add('visible');
-});
-}, { threshold: 0.1 });
-document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
-}
+        function selectLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('mw_lang', lang);
+            document.getElementById('langScreen').style.opacity = '0';
+            document.getElementById('langScreen').style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                document.getElementById('langScreen').style.display = 'none';
+                document.getElementById('navbar').style.display = 'block';
+                setTimeout(() => { document.getElementById('navbar').style.opacity = '1'; }, 50);
+                applyTranslations();
+                navigateTo('home');
+            }, 500);
+        }
 
-/* --- SMART CANVAS --- */
-function initCanvas() {
-const cvs = document.getElementById('bgCanvas');
-const ctx = cvs.getContext('2d');
-let w, h, particles = [];
-let mouse = { x: null, y: null };
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('mw_lang', lang);
+            applyTranslations();
+            toggleLangMenu();
+        }
 
-window.addEventListener('resize', () => {
-w = cvs.width = window.innerWidth;
-h = cvs.height = window.innerHeight;
-});
-window.dispatchEvent(new Event('resize'));
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    if (key === 'about_title') {
+                        el.innerHTML = t[key] + '<span class="gradient-text">MW Studio</span>';
+                    } else if (key === 'projects_title') {
+                        el.innerHTML = t[key] + '<span class="gradient-text">Projects</span>';
+                    } else if (key === 'pricing_title') {
+                        el.innerHTML = t[key] + '<span class="gradient-text">Pricing</span>';
+                    } else if (key === 'contact_title') {
+                        el.innerHTML = t[key] + '<span class="gradient-text">Amazing</span>';
+                    } else {
+                        el.textContent = t[key];
+                    }
+                }
+            });
+            const flags = { en: '🇬🇧', sr: '🇷🇸', hu: '🇭🇺' };
+            const codes = { en: 'EN', sr: 'SR', hu: 'HU' };
+            document.getElementById('currentLangFlag').textContent = flags[currentLang];
+            document.getElementById('currentLangCode').textContent = codes[currentLang];
+            document.title = 'MW Studio — ' + (currentLang === 'sr' ? 'Web Razvoj' : currentLang === 'hu' ? 'Webfejlesztés' : 'Web Development');
+        }
 
-window.addEventListener('mousemove', (e) => {
-mouse.x = e.clientX;
-mouse.y = e.clientY;
-});
+        function navigateTo(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById('page-' + page);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.toggle('active', l.getAttribute('data-page') === page);
+            });
+            window.location.hash = page;
+        }
 
-class Particle {
-constructor() {
-this.x = Math.random() * w;
-this.y = Math.random() * h;
-this.vx = (Math.random() - 0.5) * 0.5;
-this.vy = (Math.random() - 0.5) * 0.5;
-this.size = Math.random() * 2 + 1;
-}
-update() {
-this.x += this.vx;
-this.y += this.vy;
-if (this.x < 0 || this.x > w) this.vx *= -1;
-if (this.y < 0 || this.y > h) this.vy *= -1;
+        function toggleLangMenu() {
+            document.getElementById('langMenu').classList.toggle('hidden');
+        }
 
-// Mouse Interaction
-if (mouse.x) {
-const dx = mouse.x - this.x;
-const dy = mouse.y - this.y;
-const dist = Math.sqrt(dx*dx + dy*dy);
-if (dist < 150) {
-ctx.beginPath();
-ctx.strokeStyle = `rgba(56, 189, 248, ${1 - dist/150})`;
-ctx.lineWidth = 0.5;
-ctx.moveTo(this.x, this.y);
-ctx.lineTo(mouse.x, mouse.y);
-ctx.stroke();
-}
-}
-}
-draw() {
-ctx.fillStyle = 'rgba(255,255,255,0.5)';
-ctx.beginPath();
-ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-ctx.fill();
-}
-}
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
 
-for(let i=0; i<80; i++) particles.push(new Particle());
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('formName').value;
+            const email = document.getElementById('formEmail').value;
+            const plan = document.getElementById('formPlan').value;
+            const message = document.getElementById('formMessage').value;
+            const subject = encodeURIComponent(`New Project Inquiry - ${plan}`);
+            const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nPlan: ${plan}\n\nMessage:\n${message}`);
+            window.location.href = `mailto:gzolcsi2010@gmail.com?subject=${subject}&body=${body}`;
+            document.getElementById('formSuccess').classList.remove('hidden');
+            document.getElementById('contactForm').reset();
+            setTimeout(() => { document.getElementById('formSuccess').classList.add('hidden'); }, 5000);
+        }
 
-function animate() {
-ctx.clearRect(0,0,w,h);
-particles.forEach(p => {
-p.update();
-p.draw();
-// Connect to neighbors
-particles.forEach(p2 => {
-const dx = p.x - p2.x;
-const dy = p.y - p2.y;
-const dist = Math.sqrt(dx*dx + dy*dy);
-if (dist < 100) {
-ctx.beginPath();
-ctx.strokeStyle = `rgba(129, 140, 248, ${0.1 * (1 - dist/100)})`;
-ctx.lineWidth = 0.2;
-ctx.moveTo(p.x, p.y);
-ctx.lineTo(p2.x, p2.y);
-ctx.stroke();
-}
-});
-});
-requestAnimationFrame(animate);
-}
-animate();
-}
+        // Close lang menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('langMenu');
+            if (!e.target.closest('.relative') && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        });
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
-initCanvas();
-observeReveals();
+        // Check for saved language
+        window.addEventListener('load', () => {
+            const savedLang = localStorage.getItem('mw_lang');
+            if (savedLang && translations[savedLang]) {
+                currentLang = savedLang;
+                document.getElementById('langScreen').style.display = 'none';
+                document.getElementById('navbar').style.display = 'block';
+                document.getElementById('navbar').style.opacity = '1';
+                applyTranslations();
+                const hash = window.location.hash.replace('#', '');
+                navigateTo(hash || 'home');
+            }
+        });
 
-// Close lang on outside click
-window.addEventListener('click', (e) => {
-if (!e.target.closest('.lang-wrapper')) {
-document.getElementById('langWrapper').classList.remove('open');
-}
-});
-});
-</script>
+        // Handle browser back/forward
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.replace('#', '');
+            if (hash && document.getElementById('page-' + hash)) {
+                navigateTo(hash);
+            }
+        });
+    </script>
 </body>
 </html>
