@@ -4,10 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MW Web Studio</title>
+    <!--
+    ============================================================
+    SETUP GUIDE (do this once in Supabase):
+    1. Open your Supabase project → SQL Editor → New Query.
+    2. Paste the SQL block (provided together with this file) and press RUN.
+       It creates the table "mw_contact_messages" + RLS policies.
+    3. Change ADMIN_CODE in the script below to your own secret code.
+    4. On the Contact page a ⚙ gear button appears in the bottom-right
+       corner → enter the admin code → see all submitted messages.
+    ============================================================
+    -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" style="display:none">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-500-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-800-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-ext-400-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-ext-500-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-ext-600-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-ext-700-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-ext-800-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@latest/latin-500-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@latest/latin-700-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@latest/latin-ext-500-normal.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/fontsource/fonts/space-grotesk@latest/latin-ext-700-normal.min.css" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
         h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', sans-serif; }
@@ -18,7 +42,6 @@
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(59,130,246,0.3); } 50% { box-shadow: 0 0 40px rgba(59,130,246,0.6); } }
         .animate-slide-up { animation: slideUp 0.6s ease forwards; }
         .nav-link { position: relative; transition: all 0.3s ease; }
         .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #3b82f6, #8b5cf6); transition: width 0.3s ease; }
@@ -30,14 +53,19 @@
         .pricing-card.featured { border: 2px solid transparent; background-image: linear-gradient(rgba(15,23,42,0.9), rgba(15,23,42,0.9)), linear-gradient(135deg, #3b82f6, #8b5cf6); background-origin: border-box; background-clip: padding-box, border-box; }
         .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); transition: all 0.3s ease; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(59,130,246,0.4); }
-        .hero-bg { background-image: url('https://image.qwenlm.ai/public_source/d41eff2c-ab23-41cc-b9a7-6c1cf08915b3/12a98177b-4992-48ec-84e7-e50c90257830.png'); background-size: cover; background-position: center; }
+        .btn-primary:disabled { opacity: 0.6; transform: none; cursor: not-allowed; box-shadow: none; }
+        .hero-bg { background-image: url('https://image.qwenlm.ai/public_source/059a6083-52a9-4011-aab7-c810280241a9/14f855d48-f959-41b2-8b26-d9c32a99b55d.png'); background-size: cover; background-position: center; }
         .lang-btn { transition: all 0.3s ease; }
         .lang-btn:hover { transform: scale(1.05); box-shadow: 0 10px 40px rgba(59,130,246,0.3); }
-        .floating { animation: float 6s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
         .grid-pattern { background-image: radial-gradient(circle, rgba(59,130,246,0.1) 1px, transparent 1px); background-size: 30px 30px; }
-        input:focus, textarea:focus { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+        input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+        select option { background: #0f172a; color: #fff; }
         .stat-number { background: linear-gradient(135deg, #3b82f6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .modal-admin { display: none; }
+        .modal-admin.open { display: flex; animation: fadeIn 0.3s ease; }
+        .gear-btn { transition: all 0.3s ease; }
+        .gear-btn:hover svg { transform: rotate(90deg); }
+        .gear-btn svg { transition: transform 0.4s ease; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #3b82f6, #8b5cf6); border-radius: 4px; }
@@ -64,12 +92,12 @@
                     <div class="text-sm text-slate-400 mt-1">Click to continue</div>
                 </button>
                 <button onclick="selectLanguage('sr')" class="lang-btn glass rounded-2xl p-6 text-left group cursor-pointer">
-                    <div class="text-4xl mb-3">🇸</div>
+                    <div class="text-4xl mb-3">🇷🇸</div>
                     <div class="text-xl font-semibold">Srpski</div>
                     <div class="text-sm text-slate-400 mt-1">Klikni za nastavak</div>
                 </button>
                 <button onclick="selectLanguage('hu')" class="lang-btn glass rounded-2xl p-6 text-left group cursor-pointer">
-                    <div class="text-4xl mb-3">🇭</div>
+                    <div class="text-4xl mb-3">🇭🇺</div>
                     <div class="text-xl font-semibold">Magyar</div>
                     <div class="text-sm text-slate-400 mt-1">Kattints a folytatáshoz</div>
                 </button>
@@ -100,7 +128,7 @@
                     </button>
                     <div id="langMenu" class="absolute right-0 top-full mt-2 glass rounded-xl p-2 hidden min-w-[140px]">
                         <button onclick="changeLanguage('en')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 text-sm flex items-center gap-2 cursor-pointer">🇬🇧 English</button>
-                        <button onclick="changeLanguage('sr')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 text-sm flex items-center gap-2 cursor-pointer">🇸 Srpski</button>
+                        <button onclick="changeLanguage('sr')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 text-sm flex items-center gap-2 cursor-pointer">🇷🇸 Srpski</button>
                         <button onclick="changeLanguage('hu')" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 text-sm flex items-center gap-2 cursor-pointer">🇭🇺 Magyar</button>
                     </div>
                 </div>
@@ -110,7 +138,6 @@
                 </button>
             </div>
         </div>
-        <!-- Mobile Menu -->
         <div id="mobileMenu" class="md:hidden hidden glass border-t border-white/5">
             <div class="px-6 py-4 flex flex-col gap-3">
                 <button onclick="navigateTo('home'); toggleMobileMenu()" class="text-left py-2 text-slate-300 hover:text-white" data-i18n="nav_home">Home</button>
@@ -124,14 +151,13 @@
 
     <!-- HOME PAGE -->
     <div id="page-home" class="page">
-        <!-- Hero -->
         <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
             <div class="absolute inset-0 hero-bg opacity-30"></div>
             <div class="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/50 to-slate-950"></div>
             <div class="absolute inset-0 grid-pattern opacity-30"></div>
             <div class="relative z-10 max-w-6xl mx-auto px-6 text-center py-32">
                 <div class="inline-block mb-6 px-4 py-2 glass-light rounded-full text-sm text-blue-400 animate-slide-up">
-                    <span data-i18n="hero_badge"> Professional Web Development</span>
+                    <span data-i18n="hero_badge">✦ Professional Web Development</span>
                 </div>
                 <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight animate-slide-up" style="animation-delay: 0.1s;">
                     <span data-i18n="hero_title1">We Build</span><br>
@@ -147,7 +173,6 @@
             </div>
         </section>
 
-        <!-- Stats -->
         <section class="py-20 relative">
             <div class="max-w-6xl mx-auto px-6">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -171,7 +196,6 @@
             </div>
         </section>
 
-        <!-- Services Preview -->
         <section class="py-20 relative">
             <div class="max-w-6xl mx-auto px-6">
                 <div class="text-center mb-16">
@@ -259,7 +283,6 @@
                     </div>
                 </div>
 
-                <!-- Process -->
                 <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-bold mb-4" data-i18n="process_title">How We Work</h2>
                     <p class="text-slate-400" data-i18n="process_subtitle">A simple, transparent process from start to finish</p>
@@ -302,16 +325,11 @@
                 </div>
 
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Project 1: Royal -->
                     <div class="project-card glass-light rounded-3xl overflow-hidden group">
                         <div class="relative h-48 bg-gradient-to-br from-amber-500/20 to-orange-600/20 overflow-hidden">
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="text-6xl">👑</div>
-                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center"><div class="text-6xl">👑</div></div>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-medium">Website</span>
-                            </div>
+                            <div class="absolute bottom-4 left-4 right-4"><span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-medium">Website</span></div>
                         </div>
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2">Royal</h3>
@@ -328,16 +346,11 @@
                         </div>
                     </div>
 
-                    <!-- Project 2: Braca -->
                     <div class="project-card glass-light rounded-3xl overflow-hidden group">
                         <div class="relative h-48 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 overflow-hidden">
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="text-6xl"></div>
-                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center"><div class="text-6xl">🤝</div></div>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-medium">Multi-language</span>
-                            </div>
+                            <div class="absolute bottom-4 left-4 right-4"><span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-medium">Multi-language</span></div>
                         </div>
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2">Braca</h3>
@@ -354,16 +367,11 @@
                         </div>
                     </div>
 
-                    <!-- Project 3: Online Competition -->
-                    <div class="project-card glass-light rounded-3xl overflow-hidden group lg:col-span-2 lg:row-span-1">
+                    <div class="project-card glass-light rounded-3xl overflow-hidden group lg:col-span-2">
                         <div class="relative h-48 bg-gradient-to-br from-purple-500/20 to-pink-600/20 overflow-hidden">
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="text-6xl"></div>
-                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center"><div class="text-6xl">🏆</div></div>
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent"></div>
-                            <div class="absolute bottom-4 left-4 right-4">
-                                <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium" data-i18n="project3_tag">Full System</span>
-                            </div>
+                            <div class="absolute bottom-4 left-4 right-4"><span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium" data-i18n="project3_tag">Full System</span></div>
                         </div>
                         <div class="p-6">
                             <div class="flex items-center gap-2 mb-2">
@@ -385,7 +393,6 @@
                     </div>
                 </div>
 
-                <!-- CTA -->
                 <div class="mt-20 glass-light rounded-3xl p-12 text-center">
                     <h2 class="text-3xl md:text-4xl font-bold mb-4" data-i18n="projects_cta_title">Want a project like these?</h2>
                     <p class="text-slate-400 mb-8 max-w-xl mx-auto" data-i18n="projects_cta_desc">Let's work together to bring your idea to life. Get in touch and we'll discuss your project.</p>
@@ -407,13 +414,10 @@
                 </div>
 
                 <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Starter -->
                     <div class="pricing-card glass-light rounded-3xl p-8 flex flex-col">
                         <div class="mb-6">
                             <div class="text-sm text-slate-400 mb-2" data-i18n="plan1_name">Starter</div>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-5xl font-bold">€50</span>
-                            </div>
+                            <div class="flex items-baseline gap-1"><span class="text-5xl font-bold">€50</span></div>
                             <div class="text-sm text-slate-500 mt-1" data-i18n="plan1_period">one-time payment</div>
                         </div>
                         <p class="text-sm text-slate-400 mb-6" data-i18n="plan1_desc">Perfect for simple landing pages and personal websites.</p>
@@ -423,18 +427,15 @@
                             <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_basic">Basic styling</span></li>
                             <li class="flex items-center gap-3 text-sm"><span class="text-green-400">✓</span> <span data-i18n="feat_contact">Contact form</span></li>
                             <li class="flex items-center gap-3 text-sm text-slate-600"><span>✗</span> <span data-i18n="feat_database">Database</span></li>
-                            <li class="flex items-center gap-3 text-sm text-slate-600"><span></span> <span data-i18n="feat_custom">Custom features</span></li>
+                            <li class="flex items-center gap-3 text-sm text-slate-600"><span>✗</span> <span data-i18n="feat_custom">Custom features</span></li>
                         </ul>
                         <button onclick="navigateTo('contact')" class="w-full glass py-3 rounded-xl font-semibold hover:bg-white/10 transition cursor-pointer" data-i18n="plan_choose">Choose Plan</button>
                     </div>
 
-                    <!-- Standard -->
                     <div class="pricing-card glass-light rounded-3xl p-8 flex flex-col">
                         <div class="mb-6">
                             <div class="text-sm text-slate-400 mb-2" data-i18n="plan2_name">Standard</div>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-5xl font-bold">€150</span>
-                            </div>
+                            <div class="flex items-baseline gap-1"><span class="text-5xl font-bold">€150</span></div>
                             <div class="text-sm text-slate-500 mt-1" data-i18n="plan2_period">one-time payment</div>
                         </div>
                         <p class="text-sm text-slate-400 mb-6" data-i18n="plan2_desc">For websites that need a database and dynamic content.</p>
@@ -449,14 +450,11 @@
                         <button onclick="navigateTo('contact')" class="w-full glass py-3 rounded-xl font-semibold hover:bg-white/10 transition cursor-pointer" data-i18n="plan_choose">Choose Plan</button>
                     </div>
 
-                    <!-- Professional -->
                     <div class="pricing-card featured rounded-3xl p-8 flex flex-col relative">
                         <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-xs font-bold" data-i18n="popular">MOST POPULAR</div>
                         <div class="mb-6">
                             <div class="text-sm text-slate-400 mb-2" data-i18n="plan3_name">Professional</div>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-5xl font-bold">€300</span>
-                            </div>
+                            <div class="flex items-baseline gap-1"><span class="text-5xl font-bold">€300</span></div>
                             <div class="text-sm text-slate-500 mt-1" data-i18n="plan3_period">one-time payment</div>
                         </div>
                         <p class="text-sm text-slate-400 mb-6" data-i18n="plan3_desc">For serious projects with images, media, and advanced features.</p>
@@ -471,13 +469,10 @@
                         <button onclick="navigateTo('contact')" class="w-full btn-primary py-3 rounded-xl font-semibold cursor-pointer" data-i18n="plan_choose">Choose Plan</button>
                     </div>
 
-                    <!-- Enterprise -->
                     <div class="pricing-card glass-light rounded-3xl p-8 flex flex-col">
                         <div class="mb-6">
                             <div class="text-sm text-slate-400 mb-2" data-i18n="plan4_name">Enterprise</div>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-4xl font-bold">€500+</span>
-                            </div>
+                            <div class="flex items-baseline gap-1"><span class="text-4xl font-bold">€500+</span></div>
                             <div class="text-sm text-slate-500 mt-1" data-i18n="plan4_period">custom quote</div>
                         </div>
                         <p class="text-sm text-slate-400 mb-6" data-i18n="plan4_desc">Fully custom projects tailored to your exact specifications.</p>
@@ -493,7 +488,6 @@
                     </div>
                 </div>
 
-                <!-- FAQ -->
                 <div class="mt-20 max-w-3xl mx-auto">
                     <h2 class="text-3xl font-bold text-center mb-10" data-i18n="faq_title">Frequently Asked Questions</h2>
                     <div class="space-y-4">
@@ -531,13 +525,12 @@
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-12">
-                    <!-- Contact Info -->
                     <div>
                         <div class="glass-light rounded-3xl p-8 mb-6">
                             <h3 class="text-xl font-bold mb-6" data-i18n="contact_info_title">Contact Information</h3>
                             <div class="space-y-4">
                                 <a href="mailto:gzolcsi2010@gmail.com" class="flex items-center gap-4 p-4 rounded-2xl hover:bg-white/5 transition group">
-                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center text-xl group-hover:scale-110 transition"></div>
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center text-xl group-hover:scale-110 transition">✉️</div>
                                     <div>
                                         <div class="text-sm text-slate-400" data-i18n="contact_email_label">Email</div>
                                         <div class="font-medium">gzolcsi2010@gmail.com</div>
@@ -563,31 +556,15 @@
                         <div class="glass-light rounded-3xl p-8">
                             <h3 class="text-xl font-bold mb-4" data-i18n="contact_why_title">Why Work With Us?</h3>
                             <div class="space-y-3">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-green-400">✓</span>
-                                    <span class="text-sm" data-i18n="contact_why1">Professional quality at affordable prices</span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-green-400">✓</span>
-                                    <span class="text-sm" data-i18n="contact_why2">Fast turnaround times</span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-green-400">✓</span>
-                                    <span class="text-sm" data-i18n="contact_why3">Multilingual support (EN, SR, HU)</span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-green-400">✓</span>
-                                    <span class="text-sm" data-i18n="contact_why4">Ongoing support after launch</span>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-green-400">✓</span>
-                                    <span class="text-sm" data-i18n="contact_why5">Proven track record with real projects</span>
-                                </div>
+                                <div class="flex items-center gap-3"><span class="text-green-400">✓</span><span class="text-sm" data-i18n="contact_why1">Professional quality at affordable prices</span></div>
+                                <div class="flex items-center gap-3"><span class="text-green-400">✓</span><span class="text-sm" data-i18n="contact_why2">Fast turnaround times</span></div>
+                                <div class="flex items-center gap-3"><span class="text-green-400">✓</span><span class="text-sm" data-i18n="contact_why3">Multilingual support (EN, SR, HU)</span></div>
+                                <div class="flex items-center gap-3"><span class="text-green-400">✓</span><span class="text-sm" data-i18n="contact_why4">Ongoing support after launch</span></div>
+                                <div class="flex items-center gap-3"><span class="text-green-400">✓</span><span class="text-sm" data-i18n="contact_why5">Proven track record with real projects</span></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Contact Form -->
                     <div class="glass-light rounded-3xl p-8">
                         <h3 class="text-xl font-bold mb-6" data-i18n="contact_form_title">Send Us a Message</h3>
                         <form id="contactForm" onsubmit="handleContactSubmit(event)" class="space-y-5">
@@ -602,21 +579,22 @@
                             <div>
                                 <label class="block text-sm font-medium mb-2" data-i18n="form_plan">Interested Plan</label>
                                 <select id="formPlan" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-blue-500 transition">
-                                    <option value="starter" data-i18n="plan1_name">Starter — €50</option>
-                                    <option value="standard" data-i18n="plan2_name">Standard — €150</option>
-                                    <option value="professional" data-i18n="plan3_name">Professional — €300</option>
-                                    <option value="enterprise" data-i18n="plan4_name">Enterprise — €500+</option>
+                                    <option value="starter" data-i18n="form_plan_starter">Starter — €50</option>
+                                    <option value="standard" data-i18n="form_plan_standard">Standard — €150</option>
+                                    <option value="professional" data-i18n="form_plan_professional">Professional — €300</option>
+                                    <option value="enterprise" data-i18n="form_plan_enterprise">Enterprise — €500+</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2" data-i18n="form_message">Project Details</label>
                                 <textarea id="formMessage" rows="5" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-blue-500 transition resize-none" placeholder="Tell us about your project..."></textarea>
                             </div>
-                            <button type="submit" class="w-full btn-primary py-4 rounded-xl font-semibold cursor-pointer" data-i18n="form_submit">Send Message</button>
+                            <button type="submit" id="formSubmitBtn" class="w-full btn-primary py-4 rounded-xl font-semibold cursor-pointer" data-i18n="form_submit">Send Message</button>
                         </form>
                         <div id="formSuccess" class="hidden mt-4 p-4 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400 text-center text-sm">
                             <span data-i18n="form_success">✓ Message sent successfully! We'll get back to you soon.</span>
                         </div>
+                        <div id="formError" class="hidden mt-4 p-4 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 text-center text-sm"></div>
                     </div>
                 </div>
             </div>
@@ -667,8 +645,66 @@
         </div>
     </footer>
 
+    <!-- Floating Admin Settings Button (bottom-right corner, visible on Contact page) -->
+    <button id="adminSettingsBtn" onclick="openAdmin()" style="display:none;" class="gear-btn fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full glass flex items-center justify-center hover:bg-white/10 shadow-2xl cursor-pointer group" title="Admin Settings" aria-label="Admin Settings">
+        <svg class="w-6 h-6 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </button>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal-admin fixed inset-0 z-[95] items-center justify-center bg-black/70 backdrop-blur-sm p-4" onclick="if(event.target===this) closeAdminModals()">
+        <div class="glass rounded-3xl p-8 w-full max-w-sm relative">
+            <button onclick="closeAdminModals()" class="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer">✕</button>
+            <div class="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center text-2xl mb-4">🔐</div>
+            <h3 class="text-xl font-bold mb-2">Admin Access</h3>
+            <p class="text-sm text-slate-400 mb-6">Enter the admin code to view contact form messages.</p>
+            <input type="password" id="adminCodeInput" placeholder="Admin code..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 mb-2" onkeydown="if(event.key==='Enter') tryAdminLogin()">
+            <div id="adminLoginError" class="hidden text-red-400 text-sm mb-3">✗ Incorrect admin code.</div>
+            <button onclick="tryAdminLogin()" class="w-full btn-primary py-3 rounded-xl font-semibold cursor-pointer">Unlock</button>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Modal (inbox of submitted messages) -->
+    <div id="adminDashModal" class="modal-admin fixed inset-0 z-[95] items-center justify-center bg-black/70 backdrop-blur-sm p-4" onclick="if(event.target===this) closeAdminModals()">
+        <div class="glass rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col relative">
+            <div class="p-6 border-b border-white/10 flex items-center gap-4 flex-wrap">
+                <div>
+                    <h3 class="text-xl font-bold">📥 Contact Messages</h3>
+                    <p class="text-xs text-slate-400 mt-1">Live data from your Supabase table <code class="text-blue-400">mw_contact_messages</code></p>
+                </div>
+                <div class="ml-auto flex items-center gap-2">
+                    <span class="text-xs px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold">Total: <span id="adminTotalCount">0</span></span>
+                    <span class="text-xs px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-400 font-semibold">Unread: <span id="adminUnreadCount">0</span></span>
+                    <button onclick="loadMessages()" class="p-2 rounded-lg glass-light hover:bg-white/10 transition cursor-pointer" title="Refresh">
+                        <svg id="adminRefreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </button>
+                    <button onclick="adminLogout()" class="p-2 rounded-lg glass-light hover:bg-red-500/20 hover:text-red-400 transition cursor-pointer" title="Log out">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </button>
+                    <button onclick="closeAdminModals()" class="p-2 rounded-lg glass-light hover:bg-white/10 transition cursor-pointer" title="Close">✕</button>
+                </div>
+            </div>
+            <div id="adminMessagesList" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+        </div>
+    </div>
+
     <script>
-        // Translations
+        /* ============================================================
+           SUPABASE CONFIG — taken from your existing project
+           ============================================================ */
+        const SUPABASE_URL = "https://cziwnycosdxeuacslcza.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aXdueWNvc2R4ZXVhY3NsY3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MTkxMDAsImV4cCI6MjA4MjI5NTEwMH0.7OvfatHP7RAp6JS1F5hMlwfdSDgpN7EXsY2SVMoFSoY";
+
+        /* ⬇⬇⬇ CHANGE THIS to your own secret admin code ⬇⬇ */
+        const ADMIN_CODE = "MW2026";
+
+        let sb = null;
+        try {
+            sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) { console.error("Supabase init error:", e); }
+
+        /* ============================================================
+           TRANSLATIONS
+           ============================================================ */
         const translations = {
             en: {
                 nav_home: "Home", nav_about: "About", nav_projects: "Projects", nav_pricing: "Pricing", nav_contact: "Contact", nav_cta: "Get Started",
@@ -719,7 +755,10 @@
                 contact_why_title: "Why Work With Us?", contact_why1: "Professional quality at affordable prices", contact_why2: "Fast turnaround times",
                 contact_why3: "Multilingual support (EN, SR, HU)", contact_why4: "Ongoing support after launch", contact_why5: "Proven track record with real projects",
                 contact_form_title: "Send Us a Message", form_name: "Your Name", form_email: "Your Email", form_plan: "Interested Plan",
-                form_message: "Project Details", form_submit: "Send Message", form_success: "✓ Message sent successfully! We'll get back to you soon.",
+                form_plan_starter: "Starter — €50", form_plan_standard: "Standard — €150", form_plan_professional: "Professional — €300", form_plan_enterprise: "Enterprise — €500+",
+                form_message: "Project Details", form_submit: "Send Message", form_sending: "Sending...",
+                form_success: "✓ Message sent successfully! We'll get back to you soon.",
+                form_error_db: "✗ Could not send your message. Please try again or email us directly at gzolcsi2010@gmail.com.",
                 footer_desc: "Professional web development studio building modern digital experiences.",
                 footer_nav: "Navigation", footer_services: "Services", footer_contact: "Contact", footer_made: "Made with passion for the web"
             },
@@ -766,19 +805,22 @@
                 faq2_q: "Da li nudite revizije?", faq2_a: "Da! Svi planovi uključuju revizije. Profesionalni planovi uključuju 3 revizije, a Enterprise neograničene revizije.",
                 faq3_q: "Koje metode plaćanja prihvatate?", faq3_a: "Prihvatamo bankovne transfere, PayPal i druge uobičajene metode plaćanja. Kontaktirajte nas da razgovaramo o najboljoj opciji za vas.",
                 faq4_q: "Mogu li tražiti custom funkciju koja nije navedena?", faq4_a: "Apsolutno! Naš Enterprise plan je dizajniran za custom zahteve. Samo nas kontaktirajte i kreiraćemo rešenje za vas.",
-                contact_badge: " Kontaktirajte Nas", contact_title: "Hajde Da Izgradimo Nešto ", contact_subtitle: "Spremni da započnete projekat? Popunite formu ispod ili nas kontaktirajte direktno.",
+                contact_badge: "✦ Kontaktirajte Nas", contact_title: "Hajde Da Izgradimo Nešto ", contact_subtitle: "Spremni da započnete projekat? Popunite formu ispod ili nas kontaktirajte direktno.",
                 contact_info_title: "Kontakt Informacije", contact_email_label: "Email", contact_response_label: "Vreme Odgovora", contact_response_value: "U roku od 24 sata",
                 contact_location_label: "Lokacija", contact_location_value: "Remote — Širom Sveta",
                 contact_why_title: "Zašto Raditi Sa Nama?", contact_why1: "Profesionalni kvalitet po pristupačnim cenama", contact_why2: "Brzo vreme izrade",
                 contact_why3: "Višejezična podrška (EN, SR, HU)", contact_why4: "Podrška nakon lansiranja", contact_why5: "Dokazani rezultati sa pravim projektima",
                 contact_form_title: "Pošaljite Nam Poruku", form_name: "Vaše Ime", form_email: "Vaš Email", form_plan: "Zainteresovani Plan",
-                form_message: "Detalji Projekta", form_submit: "Pošalji Poruku", form_success: "✓ Poruka uspešno poslata! Javićemo vam se uskoro.",
+                form_plan_starter: "Starter — €50", form_plan_standard: "Standard — €150", form_plan_professional: "Profesionalni — €300", form_plan_enterprise: "Enterprise — €500+",
+                form_message: "Detalji Projekta", form_submit: "Pošalji Poruku", form_sending: "Šalje se...",
+                form_success: "✓ Poruka uspešno poslata! Javićemo vam se uskoro.",
+                form_error_db: "✗ Slanje nije uspelo. Pokušajte ponovo ili nam pišite direktno na gzolcsi2010@gmail.com.",
                 footer_desc: "Profesionalni studio za web development koji gradi moderna digitalna iskustva.",
                 footer_nav: "Navigacija", footer_services: "Usluge", footer_contact: "Kontakt", footer_made: "Napravljeno sa strašću za web"
             },
             hu: {
                 nav_home: "Főoldal", nav_about: "Rólunk", nav_projects: "Projektek", nav_pricing: "Árazás", nav_contact: "Kapcsolat", nav_cta: "Kezdjük",
-                hero_badge: " Professzionális Webfejlesztés", hero_title1: "Építünk", hero_title2: "Digitális Élményeket",
+                hero_badge: "✦ Professzionális Webfejlesztés", hero_title1: "Építünk", hero_title2: "Digitális Élményeket",
                 hero_desc: "Modern, gyors és gyönyörű weboldalak precízen megtervezve. Az egyszerű landing page-ektől a komplex rendszerekig — megvalósítjuk az elképzeléseidet.",
                 hero_cta1: "Munkáink", hero_cta2: "Árak",
                 stat_projects: "Elkészült Projekt", stat_satisfaction: "Ügyfél Elégedettség", stat_languages: "Támogatott Nyelv", stat_support: "Elérhető Támogatás",
@@ -805,7 +847,7 @@
                 projects_cta_btn: "Projekt Indítása",
                 pricing_badge: "✦ Árazás", pricing_title: "Egyszerű, Átlátható ", pricing_subtitle: "Válaszd ki az igényeidnek megfelelő csomagot. Nincsenek rejtett költségek, nincsenek meglepetések.",
                 plan1_name: "Starter", plan1_period: "egyszeri fizetés", plan1_desc: "Tökéletes egyszerű landing page-ekhez és személyes weboldalakhoz.",
-                feat_single: "Egyoldalas weboldal", feat_responsive: "Reszponzív dizájn", feat_basic: "Alap stílus", feat_contact: "Kapcsolat rlap",
+                feat_single: "Egyoldalas weboldal", feat_responsive: "Reszponzív dizájn", feat_basic: "Alap stílus", feat_contact: "Kapcsolati űrlap",
                 feat_database: "Adatbázis", feat_custom: "Egyedi funkciók",
                 plan2_name: "Standard", plan2_period: "egyszeri fizetés", plan2_desc: "Olyan weboldalakhoz, amelyeknek adatbázisra és dinamikus tartalomra van szükségük.",
                 feat_multi: "Többoldalas weboldal", feat_dynamic: "Dinamikus tartalom", feat_admin: "Admin panel", feat_advanced: "Haladó funkciók",
@@ -822,10 +864,13 @@
                 contact_badge: "✦ Lépj Kapcsolatba", contact_title: "Építsünk Valami ", contact_subtitle: "Készen állsz a projekted elindítására? Töltsd ki az alábbi űrlapot vagy lépj velünk közvetlenül kapcsolatba.",
                 contact_info_title: "Elérhetőségek", contact_email_label: "Email", contact_response_label: "Válaszidő", contact_response_value: "24 órán belül",
                 contact_location_label: "Helyszín", contact_location_value: "Remote — Világszerte",
-                contact_why_title: "Miért Vele Dolgozz?", contact_why1: "Professzionális minőség megfizethető árakon", contact_why2: "Gyors átfutási idő",
+                contact_why_title: "Miért Dolgozz Velünk?", contact_why1: "Professzionális minőség megfizethető árakon", contact_why2: "Gyors átfutási idő",
                 contact_why3: "Többnyelvű támogatás (EN, SR, HU)", contact_why4: "Folyamatos támogatás launch után", contact_why5: "Bizonyított eredmények valódi projektekkel",
                 contact_form_title: "Küldj Üzenetet", form_name: "Neved", form_email: "Emailed", form_plan: "Kiválasztott Csomag",
-                form_message: "Projekt Részletei", form_submit: "Üzenet Küldése", form_success: "✓ Üzenet sikeresen elküldve! Hamarosan jelentkezünk.",
+                form_plan_starter: "Starter — €50", form_plan_standard: "Standard — €150", form_plan_professional: "Professzionális — €300", form_plan_enterprise: "Enterprise — €500+",
+                form_message: "Projekt Részletei", form_submit: "Üzenet Küldése", form_sending: "Küldés...",
+                form_success: "✓ Üzenet sikeresen elküldve! Hamarosan jelentkezünk.",
+                form_error_db: "✗ A küldés sikertelen. Próbáld újra, vagy írj közvetlenül: gzolcsi2010@gmail.com.",
                 footer_desc: "Professzionális webfejlesztő stúdió, amely modern digitális élményeket épít.",
                 footer_nav: "Navigáció", footer_services: "Szolgáltatások", footer_contact: "Kapcsolat", footer_made: "Szenvedéllyel készítve a webért"
             }
@@ -833,6 +878,9 @@
 
         let currentLang = 'en';
 
+        /* ============================================================
+           NAVIGATION / LANGUAGE
+           ============================================================ */
         function selectLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('mw_lang', lang);
@@ -859,17 +907,11 @@
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) {
-                    if (key === 'about_title') {
-                        el.innerHTML = t[key] + '<span class="gradient-text">MW Studio</span>';
-                    } else if (key === 'projects_title') {
-                        el.innerHTML = t[key] + '<span class="gradient-text">Projects</span>';
-                    } else if (key === 'pricing_title') {
-                        el.innerHTML = t[key] + '<span class="gradient-text">Pricing</span>';
-                    } else if (key === 'contact_title') {
-                        el.innerHTML = t[key] + '<span class="gradient-text">Amazing</span>';
-                    } else {
-                        el.textContent = t[key];
-                    }
+                    if (key === 'about_title') el.innerHTML = t[key] + '<span class="gradient-text">MW Studio</span>';
+                    else if (key === 'projects_title') el.innerHTML = t[key] + '<span class="gradient-text">Projects</span>';
+                    else if (key === 'pricing_title') el.innerHTML = t[key] + '<span class="gradient-text">Pricing</span>';
+                    else if (key === 'contact_title') el.innerHTML = t[key] + '<span class="gradient-text">Amazing</span>';
+                    else el.textContent = t[key];
                 }
             });
             const flags = { en: '🇬🇧', sr: '🇷🇸', hu: '🇭🇺' };
@@ -889,32 +931,173 @@
             document.querySelectorAll('.nav-link').forEach(l => {
                 l.classList.toggle('active', l.getAttribute('data-page') === page);
             });
+            /* Show the admin gear button only on the Contact page */
+            document.getElementById('adminSettingsBtn').style.display = (page === 'contact') ? 'flex' : 'none';
             window.location.hash = page;
         }
 
-        function toggleLangMenu() {
-            document.getElementById('langMenu').classList.toggle('hidden');
-        }
+        function toggleLangMenu() { document.getElementById('langMenu').classList.toggle('hidden'); }
+        function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
 
-        function toggleMobileMenu() {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        }
-
-        function handleContactSubmit(e) {
+        /* ============================================================
+           CONTACT FORM → SUPABASE INSERT
+           ============================================================ */
+        async function handleContactSubmit(e) {
             e.preventDefault();
-            const name = document.getElementById('formName').value;
-            const email = document.getElementById('formEmail').value;
+            const t = translations[currentLang];
+            const btn = document.getElementById('formSubmitBtn');
+            const successBox = document.getElementById('formSuccess');
+            const errorBox = document.getElementById('formError');
+            successBox.classList.add('hidden');
+            errorBox.classList.add('hidden');
+
+            const name = document.getElementById('formName').value.trim();
+            const email = document.getElementById('formEmail').value.trim();
             const plan = document.getElementById('formPlan').value;
-            const message = document.getElementById('formMessage').value;
-            const subject = encodeURIComponent(`New Project Inquiry - ${plan}`);
-            const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nPlan: ${plan}\n\nMessage:\n${message}`);
-            window.location.href = `mailto:gzolcsi2010@gmail.com?subject=${subject}&body=${body}`;
-            document.getElementById('formSuccess').classList.remove('hidden');
-            document.getElementById('contactForm').reset();
-            setTimeout(() => { document.getElementById('formSuccess').classList.add('hidden'); }, 5000);
+            const message = document.getElementById('formMessage').value.trim();
+
+            if (!sb) {
+                errorBox.textContent = t.form_error_db;
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = t.form_sending;
+
+            const { error } = await sb.from('mw_contact_messages').insert([{ name: name, email: email, plan: plan, message: message }]);
+
+            btn.disabled = false;
+            btn.textContent = t.form_submit;
+
+            if (error) {
+                console.error('Insert error:', error);
+                errorBox.textContent = t.form_error_db;
+                errorBox.classList.remove('hidden');
+            } else {
+                successBox.classList.remove('hidden');
+                document.getElementById('contactForm').reset();
+                setTimeout(() => successBox.classList.add('hidden'), 6000);
+            }
         }
 
-        // Close lang menu when clicking outside
+        /* ============================================================
+           ADMIN PANEL (gear button, bottom-right on Contact page)
+           ============================================================ */
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        function closeAdminModals() { closeModal('adminLoginModal'); closeModal('adminDashModal'); }
+
+        function openAdmin() {
+            if (sessionStorage.getItem('mw_admin_auth') === 'true') {
+                openAdminDashboard();
+            } else {
+                document.getElementById('adminCodeInput').value = '';
+                document.getElementById('adminLoginError').classList.add('hidden');
+                openModal('adminLoginModal');
+                setTimeout(() => document.getElementById('adminCodeInput').focus(), 100);
+            }
+        }
+
+        function tryAdminLogin() {
+            const code = document.getElementById('adminCodeInput').value;
+            if (code === ADMIN_CODE) {
+                sessionStorage.setItem('mw_admin_auth', 'true');
+                closeModal('adminLoginModal');
+                openAdminDashboard();
+            } else {
+                document.getElementById('adminLoginError').classList.remove('hidden');
+            }
+        }
+
+        function openAdminDashboard() {
+            openModal('adminDashModal');
+            loadMessages();
+        }
+
+        function adminLogout() {
+            sessionStorage.removeItem('mw_admin_auth');
+            closeAdminModals();
+        }
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        const planStyles = {
+            starter: 'bg-slate-500/20 text-slate-300',
+            standard: 'bg-blue-500/20 text-blue-400',
+            professional: 'bg-purple-500/20 text-purple-400',
+            enterprise: 'bg-amber-500/20 text-amber-400'
+        };
+        const planLabels = { starter: 'Starter', standard: 'Standard', professional: 'Professional', enterprise: 'Enterprise' };
+
+        async function loadMessages() {
+            const list = document.getElementById('adminMessagesList');
+            const icon = document.getElementById('adminRefreshIcon');
+            icon.classList.add('animate-spin');
+            if (!sb) {
+                list.innerHTML = '<div class="text-red-400 text-center py-10">Supabase is not connected. Check your keys.</div>';
+                icon.classList.remove('animate-spin');
+                return;
+            }
+            const { data, error } = await sb.from('mw_contact_messages').select('*').order('created_at', { ascending: false });
+            icon.classList.remove('animate-spin');
+            if (error) {
+                list.innerHTML = '<div class="text-red-400 text-center py-10">Error: ' + escapeHtml(error.message) + '<br><span class="text-slate-400 text-xs">Did you run the SQL in Supabase?</span></div>';
+                return;
+            }
+            const msgs = data || [];
+            document.getElementById('adminTotalCount').textContent = msgs.length;
+            document.getElementById('adminUnreadCount').textContent = msgs.filter(m => !m.is_read).length;
+            renderMessages(msgs);
+        }
+
+        function renderMessages(msgs) {
+            const wrap = document.getElementById('adminMessagesList');
+            if (!msgs.length) {
+                wrap.innerHTML = '<div class="text-center py-16 text-slate-400"><div class="text-5xl mb-4">📭</div><div>No messages yet.<br>Submissions from the contact form will appear here.</div></div>';
+                return;
+            }
+            wrap.innerHTML = msgs.map(m => {
+                const planKey = String(m.plan || '').toLowerCase();
+                const style = planStyles[planKey] || 'bg-white/10 text-slate-300';
+                const label = planLabels[planKey] || m.plan || '—';
+                const date = new Date(m.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return `
+                <div class="rounded-2xl p-5 border ${m.is_read ? 'bg-white/[0.02] border-white/5' : 'bg-blue-500/10 border-blue-500/30'}">
+                    <div class="flex flex-wrap items-center gap-3 mb-3">
+                        ${m.is_read ? '' : '<span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>'}
+                        <span class="font-bold">${escapeHtml(m.name)}</span>
+                        <a href="mailto:${escapeHtml(m.email)}" class="text-sm text-blue-400 hover:text-blue-300 break-all">${escapeHtml(m.email)}</a>
+                        <span class="text-xs px-2 py-1 rounded-full ${style} font-medium">${escapeHtml(label)}</span>
+                        <span class="text-xs text-slate-500 ml-auto">${date}</span>
+                    </div>
+                    <p class="text-sm text-slate-300 whitespace-pre-wrap mb-4">${escapeHtml(m.message)}</p>
+                    <div class="flex gap-2">
+                        <button onclick="toggleRead(${m.id}, ${!m.is_read})" class="text-xs px-3 py-1.5 rounded-lg ${m.is_read ? 'bg-white/5 text-slate-400 hover:bg-white/10' : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'} transition cursor-pointer">${m.is_read ? 'Mark Unread' : 'Mark Read'}</button>
+                        <button onclick="deleteMessage(${m.id})" class="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition cursor-pointer">Delete</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function toggleRead(id, val) {
+            if (!sb) return;
+            await sb.from('mw_contact_messages').update({ is_read: val }).eq('id', id);
+            loadMessages();
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('Delete this message permanently?')) return;
+            if (!sb) return;
+            await sb.from('mw_contact_messages').delete().eq('id', id);
+            loadMessages();
+        }
+
+        /* ============================================================
+           GLOBAL LISTENERS & INIT
+           ============================================================ */
         document.addEventListener('click', (e) => {
             const menu = document.getElementById('langMenu');
             if (!e.target.closest('.relative') && !menu.classList.contains('hidden')) {
@@ -922,7 +1105,6 @@
             }
         });
 
-        // Check for saved language
         window.addEventListener('load', () => {
             const savedLang = localStorage.getItem('mw_lang');
             if (savedLang && translations[savedLang]) {
@@ -936,7 +1118,6 @@
             }
         });
 
-        // Handle browser back/forward
         window.addEventListener('hashchange', () => {
             const hash = window.location.hash.replace('#', '');
             if (hash && document.getElementById('page-' + hash)) {
