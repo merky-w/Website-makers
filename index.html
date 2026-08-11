@@ -6,18 +6,15 @@
     <title>MW Web Studio</title>
     <!--
     ============================================================
-    SETUP GUIDE (do this once in Supabase):
-    1. Open your Supabase project → SQL Editor → New Query.
-    2. Paste the SQL block (provided together with this file) and press RUN.
-       It creates the table "mw_contact_messages" + RLS policies.
-    3. Change ADMIN_CODE in the script below to your own secret code.
-    4. On the Contact page a ⚙ gear button appears in the bottom-right
-       corner → enter the admin code → see all submitted messages.
+    FIXED VERSION
+    • Admin code is now: admina
+    • Make sure you ran the NEW SQL in Supabase (it recreates the
+      correct table "mw_contact_messages" and reloads the API).
+    • After running the SQL, hard-refresh the website (Ctrl+F5).
     ============================================================
     -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" style="display:none">
     <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-500-normal.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.min.css" rel="stylesheet">
@@ -82,8 +79,8 @@
                 <div class="inline-block mb-6">
                     <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl font-bold shadow-2xl">MW</div>
                 </div>
-                <h1 class="text-4xl md:text-6xl font-bold mb-4" id="langWelcome">Welcome</h1>
-                <p class="text-lg md:text-xl text-slate-400" id="langSubtitle">Choose your language to continue</p>
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">Welcome</h1>
+                <p class="text-lg md:text-xl text-slate-400">Choose your language to continue</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
                 <button onclick="selectLanguage('en')" class="lang-btn glass rounded-2xl p-6 text-left group cursor-pointer">
@@ -645,7 +642,7 @@
         </div>
     </footer>
 
-    <!-- Floating Admin Settings Button (bottom-right corner, visible on Contact page) -->
+    <!-- Floating Admin Settings Button (bottom-right, Contact page only) -->
     <button id="adminSettingsBtn" onclick="openAdmin()" style="display:none;" class="gear-btn fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full glass flex items-center justify-center hover:bg-white/10 shadow-2xl cursor-pointer group" title="Admin Settings" aria-label="Admin Settings">
         <svg class="w-6 h-6 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
     </button>
@@ -663,13 +660,13 @@
         </div>
     </div>
 
-    <!-- Admin Dashboard Modal (inbox of submitted messages) -->
+    <!-- Admin Dashboard Modal -->
     <div id="adminDashModal" class="modal-admin fixed inset-0 z-[95] items-center justify-center bg-black/70 backdrop-blur-sm p-4" onclick="if(event.target===this) closeAdminModals()">
         <div class="glass rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col relative">
             <div class="p-6 border-b border-white/10 flex items-center gap-4 flex-wrap">
                 <div>
                     <h3 class="text-xl font-bold">📥 Contact Messages</h3>
-                    <p class="text-xs text-slate-400 mt-1">Live data from your Supabase table <code class="text-blue-400">mw_contact_messages</code></p>
+                    <p class="text-xs text-slate-400 mt-1">Live data from Supabase table <code class="text-blue-400">mw_contact_messages</code></p>
                 </div>
                 <div class="ml-auto flex items-center gap-2">
                     <span class="text-xs px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold">Total: <span id="adminTotalCount">0</span></span>
@@ -689,13 +686,13 @@
 
     <script>
         /* ============================================================
-           SUPABASE CONFIG — taken from your existing project
+           SUPABASE CONFIG
            ============================================================ */
         const SUPABASE_URL = "https://cziwnycosdxeuacslcza.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6aXdueWNvc2R4ZXVhY3NsY3phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY3MTkxMDAsImV4cCI6MjA4MjI5NTEwMH0.7OvfatHP7RAp6JS1F5hMlwfdSDgpN7EXsY2SVMoFSoY";
 
-        /* ⬇⬇⬇ CHANGE THIS to your own secret admin code ⬇⬇ */
-        const ADMIN_CODE = "MW2026";
+        /* Admin code */
+        const ADMIN_CODE = "admina";
 
         let sb = null;
         try {
@@ -878,9 +875,6 @@
 
         let currentLang = 'en';
 
-        /* ============================================================
-           NAVIGATION / LANGUAGE
-           ============================================================ */
         function selectLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('mw_lang', lang);
@@ -931,7 +925,6 @@
             document.querySelectorAll('.nav-link').forEach(l => {
                 l.classList.toggle('active', l.getAttribute('data-page') === page);
             });
-            /* Show the admin gear button only on the Contact page */
             document.getElementById('adminSettingsBtn').style.display = (page === 'contact') ? 'flex' : 'none';
             window.location.hash = page;
         }
@@ -982,7 +975,7 @@
         }
 
         /* ============================================================
-           ADMIN PANEL (gear button, bottom-right on Contact page)
+           ADMIN PANEL
            ============================================================ */
         function openModal(id) { document.getElementById(id).classList.add('open'); }
         function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -1044,7 +1037,7 @@
             const { data, error } = await sb.from('mw_contact_messages').select('*').order('created_at', { ascending: false });
             icon.classList.remove('animate-spin');
             if (error) {
-                list.innerHTML = '<div class="text-red-400 text-center py-10">Error: ' + escapeHtml(error.message) + '<br><span class="text-slate-400 text-xs">Did you run the SQL in Supabase?</span></div>';
+                list.innerHTML = '<div class="text-red-400 text-center py-10">Error: ' + escapeHtml(error.message) + '<br><span class="text-slate-400 text-xs">Run the new SQL in Supabase, then refresh.</span></div>';
                 return;
             }
             const msgs = data || [];
