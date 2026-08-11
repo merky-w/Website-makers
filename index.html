@@ -7,10 +7,12 @@
     <!--
     ============================================================
     FIXED VERSION
-    • Admin code is now: admina
-    • Make sure you ran the NEW SQL in Supabase (it recreates the
-      correct table "mw_contact_messages" and reloads the API).
-    • After running the SQL, hard-refresh the website (Ctrl+F5).
+    • Run the new SQL in Supabase (it renames/creates the correct
+      table and reloads the schema cache).
+    • This code also AUTO-DETECTS the table name, so it works with
+      "mw_contact_messages" OR "mwcontactmessages".
+    • Admin code: admina
+    • After running the SQL, hard-refresh the site (Ctrl+F5).
     ============================================================
     -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -666,7 +668,7 @@
             <div class="p-6 border-b border-white/10 flex items-center gap-4 flex-wrap">
                 <div>
                     <h3 class="text-xl font-bold">📥 Contact Messages</h3>
-                    <p class="text-xs text-slate-400 mt-1">Live data from Supabase table <code class="text-blue-400">mw_contact_messages</code></p>
+                    <p class="text-xs text-slate-400 mt-1">Live data from Supabase table <code id="adminTableName" class="text-blue-400">…</code></p>
                 </div>
                 <div class="ml-auto flex items-center gap-2">
                     <span class="text-xs px-3 py-1.5 rounded-full bg-blue-500/20 text-blue-400 font-semibold">Total: <span id="adminTotalCount">0</span></span>
@@ -698,6 +700,34 @@
         try {
             sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } catch (e) { console.error("Supabase init error:", e); }
+
+        /* ============================================================
+           TABLE AUTO-DETECTION (fixes PGRST205 "table not found")
+           Tries the correct name first, then the no-underscore name.
+           ============================================================ */
+        const CONTACT_TABLES = ['mw_contact_messages', 'mwcontactmessages'];
+        let contactTable = null;
+
+        function isMissingTableError(err) {
+            if (!err) return false;
+            return err.code === 'PGRST205' || err.code === '42P01' ||
+                   /could not find the table|does not exist/i.test(err.message || '');
+        }
+
+        async function withTable(operation) {
+            const order = contactTable
+                ? [contactTable].concat(CONTACT_TABLES.filter(n => n !== contactTable))
+                : CONTACT_TABLES.slice();
+            let lastError = null;
+            for (const name of order) {
+                const result = await operation(name);
+                const err = result && result.error;
+                if (!err) { contactTable = name; return result; }
+                lastError = err;
+                if (!isMissingTableError(err)) return result;
+            }
+            return { data: null, error: lastError };
+        }
 
         /* ============================================================
            TRANSLATIONS
@@ -933,7 +963,7 @@
         function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
 
         /* ============================================================
-           CONTACT FORM → SUPABASE INSERT
+           CONTACT FORM → SUPABASE INSERT (with table auto-detection)
            ============================================================ */
         async function handleContactSubmit(e) {
             e.preventDefault();
@@ -958,7 +988,9 @@
             btn.disabled = true;
             btn.textContent = t.form_sending;
 
-            const { error } = await sb.from('mw_contact_messages').insert([{ name: name, email: email, plan: plan, message: message }]);
+            const { error } = await withTable(tbl =>
+                sb.from(tbl).insert([{ name: name, email: email, plan: plan, message: message }])
+            );
 
             btn.disabled = false;
             btn.textContent = t.form_submit;
@@ -1034,12 +1066,15 @@
                 icon.classList.remove('animate-spin');
                 return;
             }
-            const { data, error } = await sb.from('mw_contact_messages').select('*').order('created_at', { ascending: false });
+            const { data, error } = await withTable(tbl =>
+                sb.from(tbl).select('*').order('created_at', { ascending: false })
+            );
             icon.classList.remove('animate-spin');
             if (error) {
-                list.innerHTML = '<div class="text-red-400 text-center py-10">Error: ' + escapeHtml(error.message) + '<br><span class="text-slate-400 text-xs">Run the new SQL in Supabase, then refresh.</span></div>';
+                list.innerHTML = '<div class="text-red-400 text-center py-10">Error: ' + escapeHtml(error.message) + '<br><span class="text-slate-400 text-xs">Run the SQL script in Supabase, then refresh this panel.</span></div>';
                 return;
             }
+            document.getElementById('adminTableName').textContent = contactTable;
             const msgs = data || [];
             document.getElementById('adminTotalCount').textContent = msgs.length;
             document.getElementById('adminUnreadCount').textContent = msgs.filter(m => !m.is_read).length;
@@ -1077,14 +1112,14 @@
 
         async function toggleRead(id, val) {
             if (!sb) return;
-            await sb.from('mw_contact_messages').update({ is_read: val }).eq('id', id);
+            await withTable(tbl => sb.from(tbl).update({ is_read: val }).eq('id', id));
             loadMessages();
         }
 
         async function deleteMessage(id) {
             if (!confirm('Delete this message permanently?')) return;
             if (!sb) return;
-            await sb.from('mw_contact_messages').delete().eq('id', id);
+            await withTable(tbl => sb.from(tbl).delete().eq('id', id));
             loadMessages();
         }
 
